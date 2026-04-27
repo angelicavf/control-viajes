@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>Inverti2s Elite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding-top: 65px; }
+        .nav { position: fixed; top: 0; width: 100%; background: white; display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .nav-btn { flex: 1; padding: 18px; border: none; background: none; font-weight: bold; color: #5f6368; cursor: pointer; }
+        .nav-btn.active { color: var(--p); border-bottom: 4px solid var(--p); }
+        .card { background: white; margin: 10px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        label { display: block; font-size: 0.7rem; font-weight: bold; color: #666; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; }
+        .modal-content { background:white; margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
+        #micBtn { width:70px; height:70px; border-radius:50%; border:none; background:var(--p); color:white; font-size:1.8rem; margin:10px auto; display:block; }
+        .recording { background:var(--d) !important; animation: pulse 1s infinite; }
+        .main-stat { text-align:center; padding:15px; border-radius:12px; }
+        @keyframes pulse { 0% {transform:scale(1)} 50% {transform:scale(1.05)} 100% {transform:scale(1)} }
+    </style>
+</head>
+<body>
+
+    <nav class="nav">
+        <button class="nav-btn active" onclick="tab('reg')">Registro</button>
+        <button class="nav-btn" onclick="tab('pan')">Panel</button>
+        <button class="nav-btn" onclick="tab('his')">Historial</button>
+    </nav>
+
+    <div id="reg" class="tab">
+        <div class="card" style="text-align:center">
+            <button id="micBtn">🎤</button>
+            <textarea id="textVoz" placeholder="Dicta tu jornada..."></textarea>
+            <button onclick="enviarVoz()" style="width:100%; padding:15px; background:var(--p); color:white; border:none; border-radius:10px; font-weight:bold;">PROCESAR VOZ</button>
+        </div>
+        <div class="card">
+            <h4 style="margin:0">Ingreso Manual</h4>
+            <div class="grid">
+                <div><label>Indriver</label><input type="number" id="m-ind"></div>
+                <div><label>DiDi</label><input type="number" id="m-did"></div>
+                <div><label>Cabify</label><input type="number" id="m-cab"></div>
+                <div><label>Bencina</label><input type="number" id="m-ben"></div>
+                <div><label>Tag</label><input type="number" id="m-tag"></div>
+                <div><label>Reserva</label><input type="number" id="m-res"></div>
+                <div><label>Comisión</label><input type="number" id="m-com"></div>
+                <div><label>Hrs Mañana</label><input type="number" id="m-hm"></div>
+                <div><label>Hrs Tarde</label><input type="number" id="m-ht"></div>
+            </div>
+            <button onclick="enviarManual()" style="width:100%; padding:15px; background:var(--s); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">GUARDAR MANUAL</button>
+        </div>
+    </div>
+
+    <div id="pan" class="tab" style="display:none">
+        <div class="card"><input type="month" id="filtroMes" onchange="loadData()"></div>
+        
+        <div class="grid" style="padding: 0 10px;">
+            <div class="card main-stat" style="background:#e8f5e9;"><small>NETO MES</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
+            <div class="card main-stat" style="background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
+            
+           
+            <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
+            <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
+            
+            <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
+            <div class="card" style="margin:0; text-align:center;"><small>PROM. HORAS</small><br><span id="s-prom" style="color:#1a73e8; font-weight:bold">0h</span></div>
+        </div>
+
+        <div class="card"><canvas id="chartApp"></canvas></div>
+        <div class="card"><canvas id="chartLine"></canvas></div>
+    </div>
+
+    <div id="his" class="tab" style="display:none">
+        <div class="card" style="padding:0; overflow-x:auto;">
+            <table id="tableHis">
+                <thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>⚙️</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0">Editar / Eliminar</h3>
+            <div id="editFields" class="grid"></div>
+            <button onclick="saveEdit()" style="width:100%; padding:12px; background:var(--s); color:white; border:none; border-radius:10px; margin-top:15px; font-weight:bold;">GUARDAR CAMBIOS</button>
+            <button onclick="eliminarRegistro()" style="width:100%; padding:10px; background:var(--d); color:white; border:none; border-radius:10px; margin-top:10px; font-weight:bold;">ELIMINAR REGISTRO</button>
+            <button onclick="closeModal()" style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:10px; margin-top:10px;">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec"; 
+        let cB, cL, cache = [], editingRow = null;
+        
+        document.getElementById('filtroMes').value = new Date().toISOString().substring(0, 7);
+
+        function tab(id) {
+            document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).style.display = 'block';
+            event.currentTarget.classList.add('active');
+            loadData();
+        }
+
+        async function loadData() {
+            const fValue = document.getElementById('filtroMes').value;
+            if(!fValue) return;
+            const f = fValue.split('-');
+            
+            try {
+                const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
+                const d = await r.json();
+                cache = d.records;
+
+                // Llenado de tarjetas
+                document.getElementById('s-net').innerText = "$" + (d.stats.net || 0).toLocaleString();
+                document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
+                document.getElementById('s-sal').innerText = "$" + (d.stats.saldo || 0).toLocaleString();
+                document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
+                document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
+                document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
+                document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
+
+                // Llenado de tabla
+                document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `
+                    <tr>
+                        <td>${String(r.f).substring(0,10)}</td>
+                        <td>$${(r.bru || 0).toLocaleString()}</td>
+                        <td style="color:green">$${(r.net || 0).toLocaleString()}</td>
+                        <td><button onclick="openEdit(${r.row})" style="border:none; background:none; font-size:1.2rem;">✏️</button></td>
+                    </tr>
+                `).join('');
+
+                // Gráfico de Barras (Apps)
+                if(cB) cB.destroy();
+                cB = new Chart(document.getElementById('chartApp'), { 
+                    type: 'bar', 
+                    data: { 
+                        labels: ['Ind','DiDi','Cab'], 
+                        datasets: [{ 
+                            label: 'Producción por App',
+                            data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], 
+                            backgroundColor:['#27ae60','#f1c40f','#8e44ad'] 
+                        }] 
+                    },
+                    options: { plugins: { legend: { display: false } } }
+                });
+                
+                // Gráfico de Líneas (Bruta vs Neta)
+                if(cL) cL.destroy();
+                cL = new Chart(document.getElementById('chartLine'), { 
+                    type: 'line', 
+                    data: { 
+                        labels: d.stats.hist.map(h => h.d), 
+                        datasets: [
+                            { 
+                                label: 'Bruta ($)', 
+                                data: d.stats.hist.map(h => h.p), 
+                                borderColor: '#1a73e8',
+                                fill: false,
+                                tension: 0.1 
+                            },
+                            { 
+                                label: 'Neta ($)', 
+                                data: d.stats.hist.map(h => h.n), 
+                                borderColor: '#ea4335',
+                                fill: false,
+                                tension: 0.1 
+                            }
+                        ] 
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            } catch (e) {
+                console.error("Error cargando datos:", e);
+            }
+        }
+
+        function openEdit(row) {
+            editingRow = row;
+            const r = cache.find(x => x.row === row);
+            document.getElementById('editFields').innerHTML = `
+                <div><label>Indriver</label><input type="number" id="e-ind" value="${r.ind}"></div>
+                <div><label>DiDi</label><input type="number" id="e-did" value="${r.did}"></div>
+                <div><label>Cabify</label><input type="number" id="e-cab" value="${r.cab}"></div>
+                <div><label>Bencina</label><input type="number" id="e-ben" value="${r.ben}"></div>
+                <div><label>Tag</label><input type="number" id="e-tag" value="${r.tag}"></div>
+                <div><label>Reserva</label><input type="number" id="e-res" value="${r.res}"></div>
+                <div><label>Comisión</label><input type="number" id="e-com" value="${r.com}"></div>
+                <div><label>Hrs Mañana</label><input type="number" id="e-hm" value="${r.hm}"></div>
+                <div><label>Hrs Tarde</label><input type="number" id="e-ht" value="${r.ht}"></div>
+            `;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        async function saveEdit() {
+            const p = { 
+                ind: +document.getElementById('e-ind').value, 
+                did: +document.getElementById('e-did').value, 
+                cab: +document.getElementById('e-cab').value, 
+                ben: +document.getElementById('e-ben').value, 
+                tag: +document.getElementById('e-tag').value, 
+                res: +document.getElementById('e-res').value, 
+                com: +document.getElementById('e-com').value, 
+                hm: +document.getElementById('e-hm').value, 
+                ht: +document.getElementById('e-ht').value 
+            };
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"update", row: editingRow, payload: p}) });
+            closeModal(); loadData();
+        }
+
+        async function eliminarRegistro() {
+            if(confirm("¿Estás seguro de que deseas ELIMINAR este registro?")) {
+                await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row: editingRow}) });
+                closeModal(); loadData();
+            }
+        }
+
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+        
+        // RECONOCIMIENTO DE VOZ
+        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = 'es-CL';
+        document.getElementById('micBtn').onclick = () => rec.start();
+        rec.onstart = () => document.getElementById('micBtn').classList.add('recording');
+        rec.onresult = (e) => { 
+            document.getElementById('textVoz').value = e.results[0][0].transcript; 
+            document.getElementById('micBtn').classList.remove('recording'); 
+        };
+        
+        async function enviarVoz() {
+            const m = document.getElementById('textVoz').value;
+            if(!m) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) });
+            document.getElementById('textVoz').value = ""; loadData();
+            alert("Voz procesada correctamente");
+        }
+
+        async function enviarManual() {
+            const p = { 
+                ind: +document.getElementById('m-ind').value, 
+                did: +document.getElementById('m-did').value, 
+                cab: +document.getElementById('m-cab').value, 
+                ben: +document.getElementById('m-ben').value, 
+                tag: +document.getElementById('m-tag').value, 
+                res: +document.getElementById('m-res').value, 
+                com: +document.getElementById('m-com').value, 
+                hm: +document.getElementById('m-hm').value, 
+                ht: +document.getElementById('m-ht').value 
+            };
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) });
+            loadData();
+            alert("Registro manual guardado");
+        }
+
+        // Carga inicial
+        window.onload = loadData;
+    </script>
+</body>
+</html>
