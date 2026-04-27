@@ -63,7 +63,6 @@
             <div class="card main-stat" style="background:#e8f5e9;"><small>NETO MES</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
             <div class="card main-stat" style="background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
             
-           
             <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
             <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
             
@@ -114,71 +113,77 @@
             const f = fValue.split('-');
             
             try {
-                const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
-                const d = await r.json();
+                const response = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
+                const d = await response.json();
                 cache = d.records;
 
-                // Llenado de tarjetas
+                // Actualizar Tarjetas
                 document.getElementById('s-net').innerText = "$" + (d.stats.net || 0).toLocaleString();
                 document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
-                document.getElementById('s-sal').innerText = "$" + (d.stats.saldo || 0).toLocaleString();
                 document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
                 document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
                 document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
                 document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
 
-                // Llenado de tabla
+                // Actualizar Tabla
                 document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `
                     <tr>
                         <td>${String(r.f).substring(0,10)}</td>
                         <td>$${(r.bru || 0).toLocaleString()}</td>
-                        <td style="color:green">$${(r.net || 0).toLocaleString()}</td>
+                        <td style="color:${r.net >= 0 ? 'green' : 'red'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
                         <td><button onclick="openEdit(${r.row})" style="border:none; background:none; font-size:1.2rem;">✏️</button></td>
                     </tr>
                 `).join('');
 
-                // Gráfico de Barras (Apps)
+                // Gráfico 1: Producción por App (Barras)
                 if(cB) cB.destroy();
-                cB = new Chart(document.getElementById('chartApp'), { 
-                    type: 'bar', 
-                    data: { 
-                        labels: ['Ind','DiDi','Cab'], 
-                        datasets: [{ 
-                            label: 'Producción por App',
-                            data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], 
-                            backgroundColor:['#27ae60','#f1c40f','#8e44ad'] 
-                        }] 
+                cB = new Chart(document.getElementById('chartApp'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Indriver', 'DiDi', 'Cabify'],
+                        datasets: [{
+                            data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY],
+                            backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad']
+                        }]
                     },
-                    options: { plugins: { legend: { display: false } } }
+                    options: { 
+                        responsive: true,
+                        plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App' } }
+                    }
                 });
-                
-                // Gráfico de Líneas (Bruta vs Neta)
+
+                // Gráfico 2: Evolución Diaria (Líneas)
                 if(cL) cL.destroy();
-                cL = new Chart(document.getElementById('chartLine'), { 
-                    type: 'line', 
-                    data: { 
-                        labels: d.stats.hist.map(h => h.d), 
+                cL = new Chart(document.getElementById('chartLine'), {
+                    type: 'line',
+                    data: {
+                        labels: d.stats.hist.map(h => h.d),
                         datasets: [
-                            { 
-                                label: 'Bruta ($)', 
-                                data: d.stats.hist.map(h => h.p), 
+                            {
+                                label: 'Bruta ($)',
+                                data: d.stats.hist.map(h => h.p),
                                 borderColor: '#1a73e8',
-                                fill: false,
-                                tension: 0.1 
+                                tension: 0.3,
+                                fill: false
                             },
-                            { 
-                                label: 'Neta ($)', 
-                                data: d.stats.hist.map(h => h.n), 
+                            {
+                                label: 'Neta ($)',
+                                data: d.stats.hist.map(h => h.n),
                                 borderColor: '#ea4335',
-                                fill: false,
-                                tension: 0.1 
+                                tension: 0.3,
+                                fill: false
                             }
-                        ] 
+                        ]
                     },
-                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Rendimiento Diario' } },
+                        scales: { y: { beginAtZero: false } }
+                    }
                 });
-            } catch (e) {
-                console.error("Error cargando datos:", e);
+
+            } catch (error) {
+                console.error("Error cargando datos:", error);
             }
         }
 
@@ -224,7 +229,6 @@
 
         function closeModal() { document.getElementById('editModal').style.display = 'none'; }
         
-        // RECONOCIMIENTO DE VOZ
         const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         rec.lang = 'es-CL';
         document.getElementById('micBtn').onclick = () => rec.start();
@@ -239,7 +243,6 @@
             if(!m) return;
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) });
             document.getElementById('textVoz').value = ""; loadData();
-            alert("Voz procesada correctamente");
         }
 
         async function enviarManual() {
@@ -256,10 +259,8 @@
             };
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) });
             loadData();
-            alert("Registro manual guardado");
         }
 
-        // Carga inicial
         window.onload = loadData;
     </script>
 </body>
