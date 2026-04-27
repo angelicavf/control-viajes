@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>Registro Viajes</title>
+    <title>Inverti2s Elite</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; }
@@ -22,6 +22,11 @@
         #micBtn { width:70px; height:70px; border-radius:50%; border:none; background:var(--p); color:white; font-size:1.8rem; margin:10px auto; display:block; }
         .recording { background:var(--d) !important; animation: pulse 1s infinite; }
         .main-stat { text-align:center; padding:15px; border-radius:12px; }
+        
+        /* Ajuste Dinámico del Gráfico */
+        .chart-container { height: 300px; position: relative; }
+        @media (max-width: 600px) { .chart-container { height: 400px; } }
+
         @keyframes pulse { 0% {transform:scale(1)} 50% {transform:scale(1.05)} 100% {transform:scale(1)} }
     </style>
 </head>
@@ -71,9 +76,9 @@
         </div>
 
         <div class="card"><canvas id="chartApp"></canvas></div>
-        <div class="card" style="height: 350px;">
-    <canvas id="chartLine"></canvas>
-</div>
+        <div class="card chart-container">
+            <canvas id="chartLine"></canvas>
+        </div>
     </div>
 
     <div id="his" class="tab" style="display:none">
@@ -119,20 +124,15 @@
                 const d = await response.json();
                 cache = d.records;
 
-                // Actualizar Tarjetas
-                // Dentro de loadData(), donde llenas las tarjetas:
-
-// Esta línea ahora usa el nuevo valor calculado en el script
-document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
-
-// Si quieres seguir mostrando el Neto solo en otra parte, d.stats.net sigue disponible.
+                // Llenado de tarjetas
+                document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
                 document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
                 document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
                 document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
                 document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
                 document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
 
-                // Actualizar Tabla
+                // Tabla Historial
                 document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `
                     <tr>
                         <td>${String(r.f).substring(0,10)}</td>
@@ -142,7 +142,7 @@ document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0)
                     </tr>
                 `).join('');
 
-                // Gráfico 1: Producción por App (Barras)
+                // Gráfico App
                 if(cB) cB.destroy();
                 cB = new Chart(document.getElementById('chartApp'), {
                     type: 'bar',
@@ -153,13 +153,10 @@ document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0)
                             backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad']
                         }]
                     },
-                    options: { 
-                        responsive: true,
-                        plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App' } }
-                    }
+                    options: { responsive: true, plugins: { legend: { display: false } } }
                 });
 
-                // Gráfico 2: Evolución Diaria (Líneas)
+                // Gráfico Líneas Corregido
                 if(cL) cL.destroy();
                 cL = new Chart(document.getElementById('chartLine'), {
                     type: 'line',
@@ -173,18 +170,19 @@ document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0)
                                 tension: 0.3,
                                 fill: false
                             },
-                            { 
-    label: 'Neta + Res ($)', 
-    data: d.stats.hist.map(h => h.nr), // <--- Cambia h.n por h.nr
-    borderColor: '#ea4335',
-    fill: false,
-    tension: 0.1 
-}
+                            {
+                                label: 'Neta + Res ($)',
+                                data: d.stats.hist.map(h => h.nr),
+                                borderColor: '#ea4335',
+                                tension: 0.3,
+                                fill: false
+                            }
                         ]
                     },
                     options: {
                         responsive: true,
-                        plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Rendimiento Diario' } },
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
                         scales: { y: { beginAtZero: false } }
                     }
                 });
@@ -228,7 +226,7 @@ document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0)
         }
 
         async function eliminarRegistro() {
-            if(confirm("¿Estás seguro de que deseas ELIMINAR este registro?")) {
+            if(confirm("¿Estás seguro?")) {
                 await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row: editingRow}) });
                 closeModal(); loadData();
             }
