@@ -71,7 +71,9 @@
         </div>
 
         <div class="card"><canvas id="chartApp"></canvas></div>
-        <div class="card"><canvas id="chartLine"></canvas></div>
+        <div class="card" style="height: 350px;">
+    <canvas id="chartLine"></canvas>
+</div>
     </div>
 
     <div id="his" class="tab" style="display:none">
@@ -171,13 +173,13 @@ document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0)
                                 tension: 0.3,
                                 fill: false
                             },
-                            {
-                                label: 'Neta ($)',
-                                data: d.stats.hist.map(h => h.n),
-                                borderColor: '#ea4335',
-                                tension: 0.3,
-                                fill: false
-                            }
+                            { 
+    label: 'Neta + Res ($)', 
+    data: d.stats.hist.map(h => h.nr), // <--- Cambia h.n por h.nr
+    borderColor: '#ea4335',
+    fill: false,
+    tension: 0.1 
+}
                         ]
                     },
                     options: {
