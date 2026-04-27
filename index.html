@@ -118,7 +118,12 @@
                 cache = d.records;
 
                 // Actualizar Tarjetas
-                document.getElementById('s-net').innerText = "$" + (d.stats.net || 0).toLocaleString();
+                // Dentro de loadData(), donde llenas las tarjetas:
+
+// Esta línea ahora usa el nuevo valor calculado en el script
+document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
+
+// Si quieres seguir mostrando el Neto solo en otra parte, d.stats.net sigue disponible.
                 document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
                 document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
                 document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
