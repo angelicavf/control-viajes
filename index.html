@@ -72,7 +72,11 @@
             <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
             
             <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
-            <div class="card" style="margin:0; text-align:center;"><small>PROM. HORAS</small><br><span id="s-prom" style="color:#1a73e8; font-weight:bold">0h</span></div>
+            <div class="card" style="margin:0; text-align:center;">
+                <small>PROM. HORAS</small><br>
+                <span id="s-prom" style="color:#1a73e8; font-weight:bold; font-size: 1.2rem;">0h</span><br>
+                <small style="color: #666; font-size: 0.65rem;">Semanal: <span id="s-prom-sem">0h</span></small>
+            </div>
         </div>
 
         <div class="card"><canvas id="chartApp"></canvas></div>
@@ -124,15 +128,16 @@
                 const d = await response.json();
                 cache = d.records;
 
-                // Llenado de tarjetas
+                // Actualizar Tarjetas
                 document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
                 document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
                 document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
                 document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
                 document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
                 document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
+                document.getElementById('s-prom-sem').innerText = (d.stats.promSemanal || 0) + "h";
 
-                // Tabla Historial
+                // Actualizar Tabla
                 document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `
                     <tr>
                         <td>${String(r.f).substring(0,10)}</td>
@@ -142,7 +147,7 @@
                     </tr>
                 `).join('');
 
-                // Gráfico App
+                // Gráfico de Barras (Apps)
                 if(cB) cB.destroy();
                 cB = new Chart(document.getElementById('chartApp'), {
                     type: 'bar',
@@ -153,10 +158,13 @@
                             backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad']
                         }]
                     },
-                    options: { responsive: true, plugins: { legend: { display: false } } }
+                    options: { 
+                        responsive: true,
+                        plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App' } }
+                    }
                 });
 
-                // Gráfico Líneas Corregido
+                // Gráfico de Líneas (Bruta vs Neta)
                 if(cL) cL.destroy();
                 cL = new Chart(document.getElementById('chartLine'), {
                     type: 'line',
@@ -182,7 +190,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } },
+                        plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Rendimiento Diario' } },
                         scales: { y: { beginAtZero: false } }
                     }
                 });
@@ -226,7 +234,7 @@
         }
 
         async function eliminarRegistro() {
-            if(confirm("¿Estás seguro?")) {
+            if(confirm("¿Estás seguro de que deseas ELIMINAR este registro?")) {
                 await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row: editingRow}) });
                 closeModal(); loadData();
             }
