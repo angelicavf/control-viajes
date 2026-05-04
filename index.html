@@ -270,7 +270,18 @@
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) }); loadData();
         }
 
-        window.onload = loadData;
+        // 1. Asegúrate de que el input tenga el valor antes de cargar
+window.onload = function() {
+    const ahora = new Date();
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const anio = ahora.getFullYear();
+    
+    // Seteamos el input de mes con el formato YYYY-MM que requiere el navegador
+    document.getElementById('filtroMes').value = `${anio}-${mes}`;
+    
+    // Ejecutamos la carga de datos inicial
+    loadData();
+};
     </script>
 </body>
 </html>
