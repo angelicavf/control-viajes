@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>Inverti2s Elite - Full</title>
+    <title>Inverti2s Elite - Sistema Integrado</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; }
@@ -24,6 +24,8 @@
         .strike { text-decoration: line-through; color: #bbb !important; }
         .check-btn { cursor: pointer; font-size: 1.3rem; }
         .chart-container { height: 350px; position: relative; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; }
+        .modal-content { background:white; margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
         @media (max-width: 600px) { .chart-container { height: 400px; } }
     </style>
 </head>
@@ -69,22 +71,29 @@
                 <h3 style="text-align:center; margin:0">💸 Gasto Diario</h3>
                 <label>Categoría</label>
                 <select id="g-cat">
-                    <option value="Vivienda">🏠 Vivienda</option>
-                    <option value="Alimentación">🛒 Alimentación</option>
-                    <option value="Meriendas">🥞 Meriendas</option>
-                    <option value="Transporte">🚗 Transporte</option>
-                    <option value="Salud">🏥 Salud</option>
-                    <option value="Hija">👧🏻 Hija</option>
-                    <option value="Personal">❤️ Personal</option>
+                   <option value="Vivienda">🏠 Vivienda</option>
+          <option value="Alimentación">🛒 Alimentación</option>
+          <option value="Entretencion/Ocio">🎭 Entretención</option>
+          <option value="Telefonia y Suscripciones">☎️ Telefonia/Suscripciones</option>
+          <option value="Salud">🏥 Salud/Cuidado Personal</option>
+          <option value="Inversiones">💰 Inversiones</option>
+          <option value="Deudas">💳 Deudas</option>
+          <option value="Educacion">📚 Educación</option>
+          <option value="Mascotas">🐕‍🦺 Mascotas</option>
+          <option value="Hija">👧🏻 Hija</option>
+          <option value="Personal">❤️ Personal</option>
+          <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
                 </select>
                 <input type="text" id="g-desc" placeholder="Descripción">
                 <input type="number" id="g-monto" placeholder="Monto ($)" inputmode="numeric">
                 <label>Método de Pago</label>
                 <select id="g-met">
                     <option value="Efectivo">💵 Efectivo</option>
-                    <option value="Transferencia">💱 Transferencia</option>
-                    <option value="Débito">💳 Débito</option>
-                    <option value="TDC">💳 Crédito</option>
+      <option value="Transferencia">💱 Transferencia</option>
+      <option value="Débito">💳 Débito</option>
+      <option value="Crédito TENPO">💳 TDC Tenpo</option>
+      <option value="Crédito SANTANDER">💳 TDC Santander</option>
+
                 </select>
                 <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
 
@@ -121,10 +130,8 @@
             <div class="grid" style="padding: 0 10px;">
                 <div class="card main-stat" style="background:#e8f5e9;"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
                 <div class="card main-stat" style="background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
-                
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
-                
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;">
                     <small>PROM. HORAS</small><br>
@@ -139,6 +146,7 @@
         <div id="view-pan-gastos" style="display:none">
             <div class="card main-stat" style="background:#fff3e0;"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
+            <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
         </div>
     </div>
 
@@ -161,9 +169,18 @@
         </div>
     </div>
 
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0">Editar Viaje</h3>
+            <div id="editFields" class="grid"></div>
+            <button onclick="saveEdit()" style="width:100%; padding:12px; background:var(--s); color:white; border:none; border-radius:10px; margin-top:15px; font-weight:bold;">GUARDAR CAMBIOS</button>
+            <button onclick="closeModal()" style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:10px; margin-top:10px;">Cancelar</button>
+        </div>
+    </div>
+
     <script>
         const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec";
-        let charts = {};
+        let charts = {}, cacheViajes = [], editingRow = null;
 
         function tab(id) {
             document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
@@ -179,12 +196,37 @@
             document.querySelectorAll(`#${parent} .sub-nav button`).forEach(b => b.classList.remove('active'));
             document.getElementById(`sub-${parent}-${type}`).classList.add('active');
             if(type === 'gastos' && parent === 'reg') loadFijos();
-            if(parent === 'pan') setTimeout(loadData, 100);
+            if(parent === 'pan' || parent === 'his') setTimeout(loadData, 100);
         }
 
+        // LÓGICA EDICIÓN
+        function openEdit(row) {
+            editingRow = row;
+            const r = cacheViajes.find(x => x.row === row);
+            document.getElementById('editFields').innerHTML = `
+                <div><label>Indriver</label><input type="number" id="e-ind" value="${r.ind}"></div>
+                <div><label>DiDi</label><input type="number" id="e-did" value="${r.did}"></div>
+                <div><label>Cabify</label><input type="number" id="e-cab" value="${r.cab}"></div>
+                <div><label>Bencina</label><input type="number" id="e-ben" value="${r.ben}"></div>
+                <div><label>Tag</label><input type="number" id="e-tag" value="${r.tag}"></div>
+                <div><label>Reserva</label><input type="number" id="e-res" value="${r.res}"></div>
+                <div><label>Comisión</label><input type="number" id="e-com" value="${r.com}"></div>
+                <div><label>Hrs Mañana</label><input type="number" id="e-hm" value="${r.hm}"></div>
+                <div><label>Hrs Tarde</label><input type="number" id="e-ht" value="${r.ht}"></div>
+            `;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        async function saveEdit() {
+            const p = { ind: +document.getElementById('e-ind').value, did: +document.getElementById('e-did').value, cab: +document.getElementById('e-cab').value, ben: +document.getElementById('e-ben').value, tag: +document.getElementById('e-tag').value, res: +document.getElementById('e-res').value, com: +document.getElementById('e-com').value, hm: +document.getElementById('e-hm').value, ht: +document.getElementById('e-ht').value };
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"update", row: editingRow, payload: p}) });
+            closeModal(); loadData();
+        }
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+        // GASTOS FIJOS
         function toggleFijos() {
-            const c = document.getElementById('f-content');
-            const a = document.getElementById('f-arrow');
+            const c = document.getElementById('f-content'), a = document.getElementById('f-arrow');
             const isHidden = c.style.display === 'none';
             c.style.display = isHidden ? 'block' : 'none';
             a.innerText = isHidden ? '▲' : '▼';
@@ -194,29 +236,21 @@
         async function loadFijos() {
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
             const d = await r.json();
-            const mesActual = document.getElementById('filtroMes').value;
-            const pagadosLocal = JSON.parse(localStorage.getItem(`f_pagados_${mesActual}`) || '[]');
-            let totalG = 0, totalP = 0;
-
+            const mes = document.getElementById('filtroMes').value;
+            const pLocal = JSON.parse(localStorage.getItem(`f_pag_${mes}`) || '[]');
+            let tG = 0, tP = 0;
             document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
-                totalG += g.monto;
-                const esP = pagadosLocal.includes(g.row);
-                if(esP) totalP += g.monto;
-                return `<tr>
-                    <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
-                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
-                    <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
-                    <td><button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button></td>
-                </tr>`;
+                tG += g.monto; const esP = pLocal.includes(g.row); if(esP) tP += g.monto;
+                return `<tr><td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td><td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td><td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td><td><button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button></td></tr>`;
             }).join('');
-            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${totalP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalG.toLocaleString()}</span>`;
+            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${tP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${tG.toLocaleString()}</span>`;
         }
 
         function tachado(row) {
             const mes = document.getElementById('filtroMes').value;
-            let p = JSON.parse(localStorage.getItem(`f_pagados_${mes}`) || '[]');
+            let p = JSON.parse(localStorage.getItem(`f_pag_${mes}`) || '[]');
             p.includes(row) ? p = p.filter(i => i !== row) : p.push(row);
-            localStorage.setItem(`f_pagados_${mes}`, JSON.stringify(p));
+            localStorage.setItem(`f_pag_${mes}`, JSON.stringify(p));
             loadFijos();
         }
 
@@ -229,11 +263,15 @@
             loadFijos();
         }
 
+        // CARGA DE DATOS GLOBAL
         async function loadData() {
-            const f = document.getElementById('filtroMes').value.split('-');
+            const fValue = document.getElementById('filtroMes').value;
+            const f = fValue.split('-');
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
             const d = await r.json();
+            cacheViajes = d.records;
 
+            // Stats Viajes
             document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
             document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
             document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
@@ -241,9 +279,24 @@
             document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
             document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
             document.getElementById('s-prom-sem').innerText = "Semanal: " + (d.stats.promSemanal || 0) + "h";
+
+            // Stats Gastos
             document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
 
-            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${r.bru.toLocaleString()}</td><td style="color:green">$${r.net.toLocaleString()}</td><td><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
+            // Generar Etiquetas de Gastos en Panel
+            let htmlGastos = "";
+            const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Meriendas": "🥞", "Transporte": "🚗", "Salud": "🏥", "Hija": "👧🏻", "Personal": "❤️", "Ocio": "🎭" };
+            for (let cat in d.statsGastos.porCategoria) {
+                let ico = iconos[cat] || "📦";
+                htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
+                    <span>${ico} ${cat}</span>
+                    <b>$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
+                </div>`;
+            }
+            document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
+
+            // Historiales
+            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${r.bru.toLocaleString()}</td><td style="color:green">$${r.net.toLocaleString()}</td><td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
             document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr><td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc}</small></td><td>$${g.monto.toLocaleString()}</td><td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
             
             renderCharts(d);
@@ -254,14 +307,15 @@
             charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { title: { display: true, text: 'Producción Bruta por App' } } } });
 
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8' }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335' }] }, options: { maintainAspectRatio: false } });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false } });
 
             if(charts.gastos) charts.gastos.destroy();
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] } });
+            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
         }
 
         async function guardarGasto() {
             const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
+            if(!p.monto) return alert("Ingresa monto");
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload: p}) });
             document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
             alert("Gasto registrado"); loadData();
