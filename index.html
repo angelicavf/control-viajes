@@ -338,80 +338,102 @@
             document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = ""; loadFijos();
         }
 
-        async function loadData() {
-            const fValue = document.getElementById('filtroMes').value;
-            if(!fValue) return;
-            const f = fValue.split('-');
-            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
-            const d = await r.json();
-            cacheViajes = d.records;
+       async function loadData() {
+    const fValue = document.getElementById('filtroMes').value;
+    if(!fValue) return;
+    const f = fValue.split('-');
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
+    const d = await r.json();
+    cacheViajes = d.records;
 
-            // --- LÓGICA DE HORAS ---
-            const ahora = new Date();
-            const diaSemanaActual = ahora.getDay();
-            const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
-            const lunesPasado = new Date(ahora);
-            lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
-            lunesPasado.setHours(0,0,0,0);
-            const domingoPasado = new Date(lunesPasado);
-            domingoPasado.setDate(lunesPasado.getDate() + 6);
-            domingoPasado.setHours(23,59,59,999);
+    // --- LÓGICA DE HORAS ---
+    const ahora = new Date();
+    
+    // 1. TOTAL SEMANA ANTERIOR (Lunes a Domingo Pasado)
+    const diaSemanaActual = ahora.getDay();
+    const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
+    const lunesPasado = new Date(ahora);
+    lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
+    lunesPasado.setHours(0,0,0,0);
 
-            let totalHorasSemanaAnterior = 0;
-            cacheViajes.forEach(reg => {
-                const fechaReg = new Date(reg.f);
-                if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
-                    totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-                }
-            });
+    const domingoPasado = new Date(lunesPasado);
+    domingoPasado.setDate(lunesPasado.getDate() + 6);
+    domingoPasado.setHours(23,59,59,999);
 
-            const ultimos5 = cacheViajes.slice(0, 5);
-            const suma5 = ultimos5.reduce((acc, reg) => acc + (Number(reg.hm) || 0) + (Number(reg.ht) || 0), 0);
-            const prom5 = ultimos5.length > 0 ? (suma5 / ultimos5.length).toFixed(1) : 0;
-
-            document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
-            document.getElementById('s-prom-5').innerText = "Prom. 5 días: " + prom5 + "h";
-
-            document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
-            document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
-            document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
-            document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
-            document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
-            document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
-
-            let htmlGastos = "";
-            const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
-            for (let cat in d.statsGastos.porCategoria) {
-                let ico = iconos[cat] || "📦";
-                htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
-                    <span style="color:var(--text)">${ico} ${cat}</span>
-                    <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
-                </div>`;
-            }
-            document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
-
-            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
-                <td>${String(r.f).substring(0,10)}</td>
-                <td>$${(r.bru || 0).toLocaleString()}</td>
-                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
-                <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-            </tr>`).join('');
-
-            document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
-                <td style="text-align:left">
-                    <b>${g.cat}</b><br>
-                    <small>${g.desc || ''}</small><br>
-                    <small style="color:#999">${g.fecha}</small>
-                </td>
-                <td>
-                    $${(g.monto || 0).toLocaleString()}<br>
-                    <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
-                </td>
-                <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-            </tr>`).join('');
-            
-            renderCharts(d);
+    let totalHorasSemanaAnterior = 0;
+    cacheViajes.forEach(reg => {
+        const fechaReg = new Date(reg.f);
+        if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
+            totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
         }
+    });
+
+    // 2. PROMEDIO 5 DÍAS CALENDARIO ANTERIORES (Estricto)
+    let sumaHoras5Dias = 0;
+    for (let i = 1; i <= 5; i++) {
+        // Calculamos la fecha de i días atrás
+        const fechaBusqueda = new Date(ahora);
+        fechaBusqueda.setDate(ahora.getDate() - i);
+        const fechaBusquedaStr = fechaBusqueda.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+
+        // Buscamos en el cache si hay un registro que coincida con ese día
+        const registroDia = cacheViajes.find(reg => {
+            const fReg = new Date(reg.f);
+            return fReg.toISOString().split('T')[0] === fechaBusquedaStr;
+        });
+
+        if (registroDia) {
+            sumaHoras5Dias += (Number(registroDia.hm) || 0) + (Number(registroDia.ht) || 0);
+        }
+        // Si no hay registro, suma 0 (por eso es un promedio estricto de 5 días)
+    }
+    const prom5 = (sumaHoras5Dias / 5).toFixed(1);
+
+    // Actualizamos los textos en la interfaz
+    document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
+    document.getElementById('s-prom-5').innerText = "Prom. 5 días ant: " + prom5 + "h";
+
+    // --- RESTO DE ESTADÍSTICAS Y TABLAS ---
+    document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
+    document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
+    document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
+    document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
+    document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
+    document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
+
+    let htmlGastos = "";
+    const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
+    for (let cat in d.statsGastos.porCategoria) {
+        let ico = iconos[cat] || "📦";
+        htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
+            <span style="color:var(--text)">${ico} ${cat}</span>
+            <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
+        </div>`;
+    }
+    document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
+
+    document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
+        <td>${String(r.f).substring(0,10)}</td>
+        <td>$${(r.bru || 0).toLocaleString()}</td>
+        <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
+        <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+    </tr>`).join('');
+
+    document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
+        <td style="text-align:left">
+            <b>${g.cat}</b><br>
+            <small>${g.desc || ''}</small><br>
+            <small style="color:#999">${g.fecha}</small>
+        </td>
+        <td>
+            $${(g.monto || 0).toLocaleString()}<br>
+            <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
+        </td>
+        <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+    </tr>`).join('');
+    
+    renderCharts(d);
+}
 
         function renderCharts(d) {
             const isDark = document.body.classList.contains('dark-mode');
