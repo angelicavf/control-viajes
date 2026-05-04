@@ -158,7 +158,11 @@
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center;"><small>PROM. HORAS</small><br><span id="s-prom" style="color:#1a73e8; font-weight:bold;">0h</span><br><small id="s-prom-sem" style="font-size:0.6rem; color:#666">Semanal: 0h</small></div>
+                <div class="card" style="margin:0; text-align:center;">
+                    <small id="label-sem">SEM. ANTERIOR</small><br>
+                    <span id="s-total-sem" style="color:#1a73e8; font-weight:bold;">0h</span><br>
+                    <small id="s-prom-5" style="font-size:0.6rem; color:#666">Prom. 5 días: 0h</small>
+                </div>
             </div>
             <div class="card"><canvas id="chartApp"></canvas></div>
             <div class="card chart-container"><canvas id="chartLine"></canvas></div>
@@ -302,13 +306,44 @@
             const d = await r.json();
             cacheViajes = d.records;
 
+            // --- LÓGICA DE HORAS SOLICITADA ---
+            const ahora = new Date();
+            const diaSemanaActual = ahora.getDay(); // 0 Dom, 1 Lun...
+            
+            // Calcular Lunes anterior (de la semana pasada)
+            const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
+            const lunesPasado = new Date(ahora);
+            lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
+            lunesPasado.setHours(0,0,0,0);
+
+            // Calcular Domingo anterior (de la semana pasada)
+            const domingoPasado = new Date(lunesPasado);
+            domingoPasado.setDate(lunesPasado.getDate() + 6);
+            domingoPasado.setHours(23,59,59,999);
+
+            let totalHorasSemanaAnterior = 0;
+            
+            cacheViajes.forEach(reg => {
+                const fechaReg = new Date(reg.f);
+                if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
+                    totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
+                }
+            });
+
+            // Promedio últimos 5 días registrados
+            const ultimos5 = cacheViajes.slice(0, 5);
+            const suma5 = ultimos5.reduce((acc, reg) => acc + (Number(reg.hm) || 0) + (Number(reg.ht) || 0), 0);
+            const prom5 = ultimos5.length > 0 ? (suma5 / ultimos5.length).toFixed(1) : 0;
+
+            document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
+            document.getElementById('s-prom-5').innerText = "Prom. 5 días: " + prom5 + "h";
+            // ----------------------------------
+
             document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
             document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
             document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
             document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
             document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
-            document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
-            document.getElementById('s-prom-sem').innerText = "Semanal: " + (d.stats.promSemanal || 0) + "h";
             document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
 
             let htmlGastos = "";
