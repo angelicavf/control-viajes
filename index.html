@@ -3,19 +3,42 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>Regitros Edu</title>
+    <title>Inverti2s Elite - Sistema Integrado</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding-top: 65px; }
-        .nav { position: fixed; top: 0; width: 100%; background: white; display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; --text: #333; --card-bg: #ffffff; --nav-bg: #ffffff; }
+        
+        /* ESTILOS MODO OSCURO */
+        body.dark-mode { --bg: #121212; --text: #f1f1f1; --card-bg: #1e1e1e; --nav-bg: #1e1e1e; }
+        body.dark-mode .nav { border-bottom: 1px solid #333; box-shadow: none; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #2c2c2c; color: white; border-color: #444; }
+        body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color: #333; color: #f1f1f1; }
+        body.dark-mode .sub-nav { background: #2c2c2c; }
+        body.dark-mode .sub-nav button { color: #aaa; }
+        body.dark-mode .sub-nav button.active { background: #1e1e1e; color: var(--p); }
+        body.dark-mode .card button[onclick="toggleFijos()"] { background: #2c2c2c !important; color: #fff !important; }
+
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 65px; transition: 0.3s; }
+        .nav { position: fixed; top: 0; width: 100%; background: var(--nav-bg); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
         .nav-btn { flex: 1; padding: 18px; border: none; background: none; font-weight: bold; color: #5f6368; cursor: pointer; font-size: 0.8rem; }
         .nav-btn.active { color: var(--p); border-bottom: 4px solid var(--p); }
-        .card { background: white; margin: 10px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        /* BOTÓN MODO OSCURO FLOTANTE */
+        .dark-toggle-float { 
+            position: fixed; bottom: 20px; left: 20px; width: 45px; height: 45px; 
+            background: var(--p); color: white; border: none; border-radius: 50%; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; cursor: pointer; 
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s;
+        }
+        .dark-toggle-float:active { transform: scale(0.9); }
+
+        .card { background: var(--card-bg); margin: 10px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .sub-nav { display: flex; gap: 10px; margin: 0 10px 10px; background: #eee; padding: 5px; border-radius: 10px; }
         .sub-nav button { flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; background: none; }
         .sub-nav button.active { background: white; color: var(--p); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
         input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;}
         label { display: block; font-size: 0.7rem; font-weight: bold; color: #666; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
@@ -25,7 +48,7 @@
         .check-btn { cursor: pointer; font-size: 1.3rem; }
         .chart-container { height: 350px; position: relative; }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; }
-        .modal-content { background:white; margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background:var(--card-bg); margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
         @media (max-width: 600px) { .chart-container { height: 400px; } }
     </style>
 </head>
@@ -36,6 +59,8 @@
         <button class="nav-btn" onclick="tab('pan')">Panel</button>
         <button class="nav-btn" onclick="tab('his')">Historial</button>
     </nav>
+
+    <button class="dark-toggle-float" onclick="toggleDarkMode()">🌓</button>
 
     <div id="reg" class="tab">
         <div class="sub-nav">
@@ -82,7 +107,7 @@
                   <option value="Mascotas">🐕‍🦺 Mascotas</option>
                   <option value="Hija">👧🏻 Hija</option>
                   <option value="Personal">❤️ Personal</option>
-                  <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
+                  <option value="Desayunos">🥞 Desayunos/Meriendas</option>
                 </select>
                 <input type="text" id="g-desc" placeholder="Descripción">
                 <input type="number" id="g-monto" placeholder="Monto ($)" inputmode="numeric">
@@ -101,14 +126,14 @@
                         <span>📌 Guía de Gastos Fijos</span>
                         <span id="f-arrow">▼</span>
                     </button>
-                    <div id="f-content" style="display: none; padding: 10px; background: white;">
+                    <div id="f-content" style="display: none; padding: 10px; background: var(--card-bg);">
                         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                             <input type="text" id="f-nom" placeholder="Nombre">
                             <input type="number" id="f-mon" placeholder="$" style="width:80px">
                             <button onclick="addFijo()" style="background:var(--p); color:white; border:none; border-radius:8px; padding:0 15px; font-size:1.2rem;">+</button>
                         </div>
                         <table id="tableFijos"><tbody></tbody></table>
-                        <div style="background: #f1f3f4; margin-top: 10px; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between;">
+                        <div style="background: #f1f3f4; margin-top: 10px; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; color: #333;">
                             <span>PAGADO:</span>
                             <span id="f-totalizador">$0 / $0</span>
                         </div>
@@ -127,8 +152,8 @@
 
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-                <div class="card main-stat" style="background:#e8f5e9;"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
-                <div class="card main-stat" style="background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
+                <div class="card main-stat" style="background:#e8f5e9;"><small style="color:#222">NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
+                <div class="card main-stat" style="background:#e3f2fd;"><small style="color:#222">BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
@@ -143,7 +168,7 @@
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat" style="background:#fff3e0;"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
+            <div class="card main-stat" style="background:#fff3e0;"><small style="color:#222">TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
             <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
         </div>
@@ -180,6 +205,14 @@
     <script>
         const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec";
         let charts = {}, cacheViajes = [], editingRow = null;
+
+        // --- FUNCIÓN MODO OSCURO ---
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            if(charts.line) loadData(); 
+        }
 
         function tab(id) {
             document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
@@ -295,8 +328,8 @@
             for (let cat in d.statsGastos.porCategoria) {
                 let ico = iconos[cat] || "📦";
                 htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
-                    <span>${ico} ${cat}</span>
-                    <b>$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
+                    <span style="color:var(--text)">${ico} ${cat}</span>
+                    <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
                 </div>`;
             }
             document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
@@ -325,14 +358,18 @@
         }
 
         function renderCharts(d) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const tickColor = isDark ? '#f1f1f1' : '#666';
+            const gridColor = isDark ? '#333' : '#eee';
+
             if(charts.app) charts.app.destroy();
-            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { title: { display: true, text: 'Producción Bruta por App' } } } });
+            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App', color: tickColor } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
 
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false } });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tickColor } } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
 
             if(charts.gastos) charts.gastos.destroy();
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
+            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { labels: { color: tickColor }, position: 'bottom' } } } });
         }
 
         async function guardarGasto() {
@@ -358,6 +395,9 @@
         }
 
         window.onload = function() {
+            if(localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
             const ahora = new Date();
             document.getElementById('filtroMes').value = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
             loadData();
