@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>Registros Edu</title>
+    <title>Inverti2s Elite - Full</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; }
@@ -20,12 +20,10 @@
         label { display: block; font-size: 0.7rem; font-weight: bold; color: #666; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        .chart-container { height: 350px; position: relative; }
-        
-        /* Estilos para tachado inmediato */
+        .main-stat { text-align:center; padding:15px; border-radius:12px; }
         .strike { text-decoration: line-through; color: #bbb !important; }
-        .check-btn { cursor: pointer; font-size: 1.3rem; user-select: none; }
-
+        .check-btn { cursor: pointer; font-size: 1.3rem; }
+        .chart-container { height: 350px; position: relative; }
         @media (max-width: 600px) { .chart-container { height: 400px; } }
     </style>
 </head>
@@ -68,50 +66,41 @@
 
         <div id="view-reg-gastos" style="display:none">
             <div class="card">
-                <h3 style="text-align:center; margin-top:0;">💸 Nuevo Gasto Diario</h3>
+                <h3 style="text-align:center; margin:0">💸 Gasto Diario</h3>
                 <label>Categoría</label>
                 <select id="g-cat">
                     <option value="Vivienda">🏠 Vivienda</option>
-          <option value="Alimentación">🛒 Alimentación</option>
-          <option value="Entretencion/Ocio">🎭 Entretención</option>
-          <option value="Telefonia y Suscripciones">☎️ Telefonia/Suscripciones</option>
-          <option value="Salud">🏥 Salud/Cuidado Personal</option>
-          <option value="Inversiones">💰 Inversiones</option>
-          <option value="Deudas">💳 Deudas</option>
-          <option value="Educacion">📚 Educación</option>
-          <option value="Mascotas">🐕‍🦺 Mascotas</option>
-          <option value="Hija">👧🏻 Hija</option>
-          <option value="Personal">❤️ Personal</option>
-          <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
-
+                    <option value="Alimentación">🛒 Alimentación</option>
+                    <option value="Meriendas">🥞 Meriendas</option>
+                    <option value="Transporte">🚗 Transporte</option>
+                    <option value="Salud">🏥 Salud</option>
+                    <option value="Hija">👧🏻 Hija</option>
+                    <option value="Personal">❤️ Personal</option>
                 </select>
                 <input type="text" id="g-desc" placeholder="Descripción">
                 <input type="number" id="g-monto" placeholder="Monto ($)" inputmode="numeric">
                 <label>Método de Pago</label>
                 <select id="g-met">
                     <option value="Efectivo">💵 Efectivo</option>
-                  <option value="Transferencia">💱 Transferencia</option>
-      <option value="Débito">💳 Débito</option>
-      <option value="Crédito TENPO">💳 TDC Tenpo</option>
-      <option value="Crédito SANTANDER">💳 TDC Santander</option>
+                    <option value="Transferencia">💱 Transferencia</option>
+                    <option value="Débito">💳 Débito</option>
+                    <option value="TDC">💳 Crédito</option>
                 </select>
                 <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
 
                 <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                     <button onclick="toggleFijos()" style="width: 100%; padding: 15px; border: none; background: #eee; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; color: #555;">
-                        <span>📌 Lista de Gastos Fijos</span>
+                        <span>📌 Guía de Gastos Fijos</span>
                         <span id="f-arrow">▼</span>
                     </button>
                     <div id="f-content" style="display: none; padding: 10px; background: white;">
                         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                            <input type="text" id="f-nom" placeholder="Nuevo gasto fijo">
-                            <input type="number" id="f-mon" placeholder="$" style="width: 80px;" inputmode="numeric">
+                            <input type="text" id="f-nom" placeholder="Nombre">
+                            <input type="number" id="f-mon" placeholder="$" style="width:80px">
                             <button onclick="addFijo()" style="background:var(--p); color:white; border:none; border-radius:8px; padding:0 15px; font-size:1.2rem;">+</button>
                         </div>
-                        <table id="tableFijos">
-                            <tbody></tbody>
-                        </table>
-                        <div style="background: #f1f3f4; margin-top: 10px; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; border: 1px dashed #ccc;">
+                        <table id="tableFijos"><tbody></tbody></table>
+                        <div style="background: #f1f3f4; margin-top: 10px; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between;">
                             <span>PAGADO:</span>
                             <span id="f-totalizador">$0 / $0</span>
                         </div>
@@ -127,16 +116,28 @@
             <button id="sub-pan-viajes" class="active" onclick="subTab('pan', 'viajes')">Viajes</button>
             <button id="sub-pan-gastos" onclick="subTab('pan', 'gastos')">Gastos</button>
         </div>
+
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-                <div class="card" style="text-align:center; background:#e8f5e9; grid-column: span 2;"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.6rem; color:#2e7d32">$0</strong></div>
-                <div class="card" style="text-align:center; background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.2rem; color:#1565c0">$0</strong></div>
-                <div class="card" style="text-align:center;"><small>RESERVA</small><br><strong id="s-res" style="font-size:1.2rem; color:#673ab7">$0</strong></div>
+                <div class="card main-stat" style="background:#e8f5e9;"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
+                <div class="card main-stat" style="background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
+                
+                <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
+                <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
+                
+                <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
+                <div class="card" style="margin:0; text-align:center;">
+                    <small>PROM. HORAS</small><br>
+                    <span id="s-prom" style="color:#1a73e8; font-weight:bold;">0h</span><br>
+                    <small id="s-prom-sem" style="font-size:0.6rem; color:#666">Semanal: 0h</small>
+                </div>
             </div>
+            <div class="card"><canvas id="chartApp"></canvas></div>
             <div class="card chart-container"><canvas id="chartLine"></canvas></div>
         </div>
+
         <div id="view-pan-gastos" style="display:none">
-            <div class="card" style="text-align:center; background:#fff3e0;"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
+            <div class="card main-stat" style="background:#fff3e0;"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
         </div>
     </div>
@@ -177,7 +178,8 @@
             document.getElementById(`view-${parent}-gastos`).style.display = type === 'gastos' ? 'block' : 'none';
             document.querySelectorAll(`#${parent} .sub-nav button`).forEach(b => b.classList.remove('active'));
             document.getElementById(`sub-${parent}-${type}`).classList.add('active');
-            if(type === 'gastos') loadFijos();
+            if(type === 'gastos' && parent === 'reg') loadFijos();
+            if(parent === 'pan') setTimeout(loadData, 100);
         }
 
         function toggleFijos() {
@@ -189,107 +191,70 @@
             if(isHidden) loadFijos();
         }
 
-        // --- NUEVA LÓGICA GASTOS FIJOS (TACHADO INMEDIATO + TOTALIZADOR) ---
         async function loadFijos() {
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
             const d = await r.json();
-            
-            // Leemos del teléfono qué filas están tachadas este mes
             const mesActual = document.getElementById('filtroMes').value;
-            const key = `fijos_pagados_${mesActual}`;
-            const pagadosLocal = JSON.parse(localStorage.getItem(key) || '[]');
-            
-            let totalGuia = 0;
-            let totalPagado = 0;
+            const pagadosLocal = JSON.parse(localStorage.getItem(`f_pagados_${mesActual}`) || '[]');
+            let totalG = 0, totalP = 0;
 
             document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
-                totalGuia += g.monto;
-                const esPagado = pagadosLocal.includes(g.row);
-                if(esPagado) totalPagado += g.monto;
-
-                return `
-                <tr>
-                    <td class="check-btn" style="width: 40px;" onclick="tachadoInmediato(${g.row}, ${g.monto})">
-                        ${esPagado ? '✅' : '🔲'}
-                    </td>
-                    <td style="text-align:left; padding-left: 5px;" class="${esPagado ? 'strike' : ''}">
-                        ${g.nombre}
-                    </td>
-                    <td style="text-align:right; font-weight:bold; padding-right:15px;" class="${esPagado ? 'strike' : ''}">
-                        $${g.monto.toLocaleString()}
-                    </td>
-                    <td style="width: 30px;">
-                        <button onclick="deleteFijoDefinitivo(${g.row}, '${g.nombre}')" style="border:none; background:none; color:var(--d); font-weight:bold; cursor:pointer;">X</button>
-                    </td>
+                totalG += g.monto;
+                const esP = pagadosLocal.includes(g.row);
+                if(esP) totalP += g.monto;
+                return `<tr>
+                    <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
+                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
+                    <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
+                    <td><button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button></td>
                 </tr>`;
             }).join('');
-
-            // Actualizar totalizador formato: $Pagado / $Total
-            document.getElementById('f-totalizador').innerHTML = 
-                `<span style="color:var(--s)">$${totalPagado.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalGuia.toLocaleString()}</span>`;
+            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${totalP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalG.toLocaleString()}</span>`;
         }
 
-        function tachadoInmediato(row, monto) {
-            const mesActual = document.getElementById('filtroMes').value;
-            const key = `fijos_pagados_${mesActual}`;
-            let pagadosLocal = JSON.parse(localStorage.getItem(key) || '[]');
-            
-            if(!pagadosLocal.includes(row)) {
-                pagadosLocal.push(row); // Tachamos
-            } else {
-                pagadosLocal = pagadosLocal.filter(id => id !== row); // Destachamos
-            }
-            
-            localStorage.setItem(key, JSON.stringify(pagadosLocal));
-            loadFijos(); // Recargamos la tabla para ver el cambio y totalizadores
+        function tachado(row) {
+            const mes = document.getElementById('filtroMes').value;
+            let p = JSON.parse(localStorage.getItem(`f_pagados_${mes}`) || '[]');
+            p.includes(row) ? p = p.filter(i => i !== row) : p.push(row);
+            localStorage.setItem(`f_pagados_${mes}`, JSON.stringify(p));
+            loadFijos();
         }
 
-        async function deleteFijoDefinitivo(row, nom) {
-            if(confirm(`¿Eliminar "${nom}" de la guía permanentemente?`)) {
-                await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) });
-                
-                // Limpiar del registro local si estaba tachado
-                const mesActual = document.getElementById('filtroMes').value;
-                const key = `fijos_pagados_${mesActual}`;
-                let pagadosLocal = JSON.parse(localStorage.getItem(key) || '[]');
-                pagadosLocal = pagadosLocal.filter(id => id !== row);
-                localStorage.setItem(key, JSON.stringify(pagadosLocal));
-                
-                loadFijos();
-            }
-        }
-
+        async function delFijo(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) }); loadFijos(); } }
         async function addFijo() {
-            const n = document.getElementById('f-nom').value.trim();
-            const m = document.getElementById('f-mon').value;
+            const n = document.getElementById('f-nom').value, m = document.getElementById('f-mon').value;
             if(!n || !m) return;
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"createFijo", payload:{nombre:n, monto:m}}) });
             document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = "";
             loadFijos();
         }
 
-        // --- LÓGICA GENERAL (Sin Cambios) ---
         async function loadData() {
-            const fValue = document.getElementById('filtroMes').value;
-            if(!fValue) return;
-            const f = fValue.split('-');
+            const f = document.getElementById('filtroMes').value.split('-');
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
             const d = await r.json();
 
             document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
             document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
+            document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
+            document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
             document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
+            document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
+            document.getElementById('s-prom-sem').innerText = "Semanal: " + (d.stats.promSemanal || 0) + "h";
             document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
 
-            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${r.bru.toLocaleString()}</td><td>$${r.net.toLocaleString()}</td><td><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
+            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${r.bru.toLocaleString()}</td><td style="color:green">$${r.net.toLocaleString()}</td><td><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
             document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr><td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc}</small></td><td>$${g.monto.toLocaleString()}</td><td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
             
             renderCharts(d);
         }
 
         function renderCharts(d) {
+            if(charts.app) charts.app.destroy();
+            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { title: { display: true, text: 'Producción Bruta por App' } } } });
+
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false } });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8' }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335' }] }, options: { maintainAspectRatio: false } });
 
             if(charts.gastos) charts.gastos.destroy();
             charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] } });
@@ -297,9 +262,8 @@
 
         async function guardarGasto() {
             const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
-            if(!p.monto) return alert("Ingresa monto");
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload: p}) });
-            document.getElementById('g-desc').value = ""; document.getElementById('g-montoEn').value = "";
+            document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
             alert("Gasto registrado"); loadData();
         }
 
@@ -309,8 +273,7 @@
         const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         rec.lang = 'es-CL';
         document.getElementById('micBtn').onclick = () => rec.start();
-        rec.onstart = () => document.getElementById('micBtn').style.opacity = "0.5";
-        rec.onresult = (e) => { document.getElementById('textVoz').value = e.results[0][0].transcript; document.getElementById('micBtn').style.opacity = "1"; };
+        rec.onresult = (e) => { document.getElementById('textVoz').value = e.results[0][0].transcript; };
         
         async function enviarVoz() { const m = document.getElementById('textVoz').value; if(!m) return; await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) }); document.getElementById('textVoz').value = ""; loadData(); }
         async function enviarManual() {
