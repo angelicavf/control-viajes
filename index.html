@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>Inverti2s Elite - Sistema Integrado</title>
+    <title>Inverti2s Elite - Full</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; }
@@ -236,21 +236,29 @@
         async function loadFijos() {
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
             const d = await r.json();
-            const mes = document.getElementById('filtroMes').value;
-            const pLocal = JSON.parse(localStorage.getItem(`f_pag_${mes}`) || '[]');
-            let tG = 0, tP = 0;
+            const mesActual = document.getElementById('filtroMes').value;
+            const pagadosLocal = JSON.parse(localStorage.getItem(`f_pagados_${mesActual}`) || '[]');
+            let totalG = 0, totalP = 0;
+
             document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
-                tG += g.monto; const esP = pLocal.includes(g.row); if(esP) tP += g.monto;
-                return `<tr><td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td><td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td><td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td><td><button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button></td></tr>`;
+                totalG += g.monto;
+                const esP = pagadosLocal.includes(g.row);
+                if(esP) totalP += g.monto;
+                return `<tr>
+                    <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
+                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
+                    <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
+                    <td><button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button></td>
+                </tr>`;
             }).join('');
-            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${tP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${tG.toLocaleString()}</span>`;
+            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${totalP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalG.toLocaleString()}</span>`;
         }
 
         function tachado(row) {
             const mes = document.getElementById('filtroMes').value;
-            let p = JSON.parse(localStorage.getItem(`f_pag_${mes}`) || '[]');
+            let p = JSON.parse(localStorage.getItem(`f_pagados_${mes}`) || '[]');
             p.includes(row) ? p = p.filter(i => i !== row) : p.push(row);
-            localStorage.setItem(`f_pag_${mes}`, JSON.stringify(p));
+            localStorage.setItem(`f_pagados_${mes}`, JSON.stringify(p));
             loadFijos();
         }
 
@@ -266,6 +274,7 @@
         // CARGA DE DATOS GLOBAL
         async function loadData() {
             const fValue = document.getElementById('filtroMes').value;
+            if(!fValue) return;
             const f = fValue.split('-');
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
             const d = await r.json();
@@ -283,9 +292,14 @@
             // Stats Gastos
             document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
 
-            // Generar Etiquetas de Gastos en Panel
+            // --- Generar Etiquetas de Gastos en Panel ---
             let htmlGastos = "";
-            const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Meriendas": "🥞", "Transporte": "🚗", "Salud": "🏥", "Hija": "👧🏻", "Personal": "❤️", "Ocio": "🎭" };
+            const iconos = { 
+                "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", 
+                "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", 
+                "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", 
+                "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" 
+            };
             for (let cat in d.statsGastos.porCategoria) {
                 let ico = iconos[cat] || "📦";
                 htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
@@ -295,9 +309,26 @@
             }
             document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
 
-            // Historiales
-            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${r.bru.toLocaleString()}</td><td style="color:green">$${r.net.toLocaleString()}</td><td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
-            document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr><td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc}</small></td><td>$${g.monto.toLocaleString()}</td><td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
+            // Historial Viajes (Con color rojo si es negativo)
+            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
+                <td>${String(r.f).substring(0,10)}</td>
+                <td>$${r.bru.toLocaleString()}</td>
+                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${r.net.toLocaleString()}</td>
+                <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+            </tr>`).join('');
+
+            // Historial Gastos (Con fecha y método debajo)
+            document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
+                <td style="text-align:left">
+                    <b>${g.cat}</b><br>
+                    <small style="color:#999">${g.fecha}</small>
+                </td>
+                <td>
+                    $${g.monto.toLocaleString()}<br>
+                    <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
+                </td>
+                <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+            </tr>`).join('');
             
             renderCharts(d);
         }
@@ -307,7 +338,7 @@
             charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { title: { display: true, text: 'Producción Bruta por App' } } } });
 
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false } });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8' }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335' }] }, options: { maintainAspectRatio: false } });
 
             if(charts.gastos) charts.gastos.destroy();
             charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
