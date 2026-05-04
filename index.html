@@ -44,6 +44,9 @@
         .chart-container { height: 350px; position: relative; }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; }
         .modal-content { background:var(--card-bg); margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
+        
+        /* Botón de nota pequeño */
+        .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
     </style>
 </head>
 <body>
@@ -146,32 +149,24 @@
 
     <div id="pan" class="tab" style="display:none">
         <div class="card"><input type="month" id="filtroMes" onchange="loadData()"></div>
-        <div class="sub-nav">
-            <button id="sub-pan-viajes" class="active" onclick="subTab('pan', 'viajes')">Viajes</button>
-            <button id="sub-pan-gastos" onclick="subTab('pan', 'gastos')">Gastos</button>
-        </div>
-
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
                 <div class="card main-stat" style="background:#e8f5e9;"><small style="color:#222">NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
                 <div class="card main-stat" style="background:#e3f2fd;"><small style="color:#222">BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
-                <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center;">
-                    <small id="label-sem">SEM. ANTERIOR</small><br>
-                    <span id="s-total-sem" style="color:#1a73e8; font-weight:bold;">0h</span><br>
-                    <small id="s-prom-5" style="font-size:0.6rem; color:#666">Prom. 5 días: 0h</small>
-                </div>
+                <div class="card" style="margin:0; text-align:center;"><small id="label-sem">SEM. ANTERIOR</small><br><span id="s-total-sem" style="color:#1a73e8; font-weight:bold;">0h</span><br><small id="s-prom-5" style="font-size:0.6rem; color:#666">Prom. 5 días: 0h</small></div>
+                <div class="card" style="margin:0; text-align:center"><small>TAG/BEN</small><br><span id="s-tag-ben" style="color:var(--d); font-weight:bold">$0</span></div>
             </div>
             <div class="card"><canvas id="chartApp"></canvas></div>
             <div class="card chart-container"><canvas id="chartLine"></canvas></div>
         </div>
+    </div>
 
-        <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat" style="background:#fff3e0;"><small style="color:#222">TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
-            <div class="card"><canvas id="chartGastos"></canvas></div>
-            <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <h3 id="noteTitle" style="margin-top:0">Nota</h3>
+            <textarea id="noteArea" rows="5" placeholder="Escribe un detalle..."></textarea>
+            <button onclick="saveNote()" style="width:100%; padding:12px; background:var(--s); color:white; border:none; border-radius:10px; margin-top:15px; font-weight:bold;">GUARDAR NOTA</button>
+            <button onclick="closeNoteModal()" style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:10px; margin-top:10px;">Cerrar</button>
         </div>
     </div>
 
@@ -181,36 +176,20 @@
             <button id="sub-his-gastos" onclick="subTab('his', 'gastos')">Gastos</button>
         </div>
         <div id="view-his-viajes" class="card" style="padding:0; overflow-x:auto;">
-            <table id="tableHis">
-                <thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>⚙️</th></tr></thead>
-                <tbody></tbody>
-            </table>
+            <table id="tableHis"><thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>⚙️</th></tr></thead><tbody></tbody></table>
         </div>
         <div id="view-his-gastos" class="card" style="display:none; padding:0; overflow-x:auto;">
-            <table id="tableGastos">
-                <thead><tr><th>Detalle</th><th>Monto</th><th>⚙️</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-top:0">Editar Viaje</h3>
-            <div id="editFields" class="grid"></div>
-            <button onclick="saveEdit()" style="width:100%; padding:12px; background:var(--s); color:white; border:none; border-radius:10px; margin-top:15px; font-weight:bold;">GUARDAR CAMBIOS</button>
-            <button onclick="closeModal()" style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:10px; margin-top:10px;">Cancelar</button>
+            <table id="tableGastos"><thead><tr><th>Detalle</th><th>Monto</th><th>⚙️</th></tr></thead><tbody></tbody></table>
         </div>
     </div>
 
     <script>
         const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec";
-        let charts = {}, cacheViajes = [], editingRow = null;
+        let charts = {}, cacheViajes = [], cacheFijos = [], editingFijoRow = null;
 
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-            if(charts.line) loadData(); 
         }
 
         function toggleVoz() {
@@ -234,33 +213,9 @@
             document.querySelectorAll(`#${parent} .sub-nav button`).forEach(b => b.classList.remove('active'));
             document.getElementById(`sub-${parent}-${type}`).classList.add('active');
             if(type === 'gastos' && parent === 'reg') loadFijos();
-            if(parent === 'pan' || parent === 'his') setTimeout(loadData, 100);
         }
 
-        function openEdit(row) {
-            editingRow = row;
-            const r = cacheViajes.find(x => x.row === row);
-            document.getElementById('editFields').innerHTML = `
-                <div><label>Indriver</label><input type="number" id="e-ind" value="${r.ind}"></div>
-                <div><label>DiDi</label><input type="number" id="e-did" value="${r.did}"></div>
-                <div><label>Cabify</label><input type="number" id="e-cab" value="${r.cab}"></div>
-                <div><label>Bencina</label><input type="number" id="e-ben" value="${r.ben}"></div>
-                <div><label>Tag</label><input type="number" id="e-tag" value="${r.tag}"></div>
-                <div><label>Reserva</label><input type="number" id="e-res" value="${r.res}"></div>
-                <div><label>Comisión</label><input type="number" id="e-com" value="${r.com}"></div>
-                <div><label>Hrs Mañana</label><input type="number" id="e-hm" value="${r.hm}"></div>
-                <div><label>Hrs Tarde</label><input type="number" id="e-ht" value="${r.ht}"></div>
-            `;
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        async function saveEdit() {
-            const p = { ind: +document.getElementById('e-ind').value, did: +document.getElementById('e-did').value, cab: +document.getElementById('e-cab').value, ben: +document.getElementById('e-ben').value, tag: +document.getElementById('e-tag').value, res: +document.getElementById('e-res').value, com: +document.getElementById('e-com').value, hm: +document.getElementById('e-hm').value, ht: +document.getElementById('e-ht').value };
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"update", row: editingRow, payload: p}) });
-            closeModal(); loadData();
-        }
-        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-
+        // --- GASTOS FIJOS CON NOTAS ---
         function toggleFijos() {
             const c = document.getElementById('f-content'), a = document.getElementById('f-arrow');
             const isHidden = c.style.display === 'none';
@@ -272,15 +227,42 @@
         async function loadFijos() {
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
             const d = await r.json();
+            cacheFijos = d.fijos;
             const mesActual = document.getElementById('filtroMes').value;
             const pagadosLocal = JSON.parse(localStorage.getItem(`f_pagados_${mesActual}`) || '[]');
             let totalG = 0, totalP = 0;
+            
             document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
                 totalG += g.monto; const esP = pagadosLocal.includes(g.row); if(esP) totalP += g.monto;
-                return `<tr><td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td><td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td><td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td><td><button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button></td></tr>`;
+                return `<tr>
+                    <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
+                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
+                    <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
+                    <td>
+                        <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
+                        <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
+                    </td>
+                </tr>`;
             }).join('');
-            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${totalP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalG.toLocaleString()}</span>`;
+            document.getElementById('f-totalizador').innerHTML = `<span>PAGADO:</span><span>$${totalP.toLocaleString()} / $${totalG.toLocaleString()}</span>`;
         }
+
+        function openNote(row) {
+            const fijo = cacheFijos.find(f => f.row === row);
+            editingFijoRow = row;
+            document.getElementById('noteTitle').innerText = "Nota: " + fijo.nombre;
+            document.getElementById('noteArea').value = fijo.nota || "";
+            document.getElementById('noteModal').style.display = 'block';
+        }
+
+        async function saveNote() {
+            const nota = document.getElementById('noteArea').value;
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"updateFijoNota", row: editingFijoRow, nota: nota}) });
+            closeNoteModal();
+            loadFijos();
+        }
+
+        function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
 
         function tachado(row) {
             const mes = document.getElementById('filtroMes').value;
@@ -298,6 +280,7 @@
             document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = ""; loadFijos();
         }
 
+        // CARGA DE DATOS GLOBAL
         async function loadData() {
             const fValue = document.getElementById('filtroMes').value;
             if(!fValue) return;
@@ -306,76 +289,27 @@
             const d = await r.json();
             cacheViajes = d.records;
 
-            // --- LÓGICA DE HORAS SOLICITADA ---
+            // Horas Semana Pasada y Promedio
             const ahora = new Date();
-            const diaSemanaActual = ahora.getDay(); // 0 Dom, 1 Lun...
+            const diffALunesPasado = (ahora.getDay() === 0 ? 6 : ahora.getDay() - 1) + 7;
+            const lunesP = new Date(ahora); lunesP.setDate(ahora.getDate() - diffALunesPasado); lunesP.setHours(0,0,0,0);
+            const domingoP = new Date(lunesP); domingoP.setDate(lunesP.getDate() + 6); domingoP.setHours(23,59,59,999);
             
-            // Calcular Lunes anterior (de la semana pasada)
-            const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
-            const lunesPasado = new Date(ahora);
-            lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
-            lunesPasado.setHours(0,0,0,0);
-
-            // Calcular Domingo anterior (de la semana pasada)
-            const domingoPasado = new Date(lunesPasado);
-            domingoPasado.setDate(lunesPasado.getDate() + 6);
-            domingoPasado.setHours(23,59,59,999);
-
-            let totalHorasSemanaAnterior = 0;
-            
+            let hSem = 0;
             cacheViajes.forEach(reg => {
-                const fechaReg = new Date(reg.f);
-                if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
-                    totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-                }
+                const fr = new Date(reg.f);
+                if(fr >= lunesP && fr <= domingoP) hSem += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
             });
+            const u5 = cacheViajes.slice(0, 5);
+            const p5 = u5.length > 0 ? (u5.reduce((acc, reg) => acc + (Number(reg.hm) || 0) + (Number(reg.ht) || 0), 0) / u5.length).toFixed(1) : 0;
 
-            // Promedio últimos 5 días registrados
-            const ultimos5 = cacheViajes.slice(0, 5);
-            const suma5 = ultimos5.reduce((acc, reg) => acc + (Number(reg.hm) || 0) + (Number(reg.ht) || 0), 0);
-            const prom5 = ultimos5.length > 0 ? (suma5 / ultimos5.length).toFixed(1) : 0;
-
-            document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
-            document.getElementById('s-prom-5').innerText = "Prom. 5 días: " + prom5 + "h";
-            // ----------------------------------
-
+            document.getElementById('s-total-sem').innerText = hSem + "h";
+            document.getElementById('s-prom-5').innerText = "Prom. 5 días: " + p5 + "h";
             document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
             document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
-            document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
-            document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
-            document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
-            document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
-
-            let htmlGastos = "";
-            const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
-            for (let cat in d.statsGastos.porCategoria) {
-                let ico = iconos[cat] || "📦";
-                htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
-                    <span style="color:var(--text)">${ico} ${cat}</span>
-                    <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
-                </div>`;
-            }
-            document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
-
-            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
-                <td>${String(r.f).substring(0,10)}</td>
-                <td>$${(r.bru || 0).toLocaleString()}</td>
-                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
-                <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-            </tr>`).join('');
-
-            document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
-                <td style="text-align:left">
-                    <b>${g.cat}</b><br>
-                    <small>${g.desc || ''}</small><br>
-                    <small style="color:#999">${g.fecha}</small>
-                </td>
-                <td>
-                    $${(g.monto || 0).toLocaleString()}<br>
-                    <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
-                </td>
-                <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-            </tr>`).join('');
+            
+            // Historiales...
+            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${(r.bru || 0).toLocaleString()}</td><td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td><td><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td></tr>`).join('');
             
             renderCharts(d);
         }
@@ -383,39 +317,26 @@
         function renderCharts(d) {
             const isDark = document.body.classList.contains('dark-mode');
             const tickColor = isDark ? '#f1f1f1' : '#666';
-            const gridColor = isDark ? '#333' : '#eee';
             if(charts.app) charts.app.destroy();
-            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App', color: tickColor } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
+            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { title: { display: true, text: 'App Bruto', color: tickColor } } } });
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tickColor } } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
-            if(charts.gastos) charts.gastos.destroy();
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { labels: { color: tickColor }, position: 'bottom' } } } });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruto', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8' }] }, options: { maintainAspectRatio: false } });
         }
 
         async function guardarGasto() {
             const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
-            if(!p.monto) return alert("Ingresa monto");
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload: p}) });
-            document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
-            alert("Gasto registrado"); loadData();
+            loadData();
         }
 
-        async function deleteGasto(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteGasto", row}) }); loadData(); } }
-        async function deleteReg(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row}) }); loadData(); } }
-        
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        rec.lang = 'es-CL';
-        document.getElementById('micBtn').onclick = () => rec.start();
-        rec.onresult = (e) => { document.getElementById('textVoz').value = e.results[0][0].transcript; };
-        
-        async function enviarVoz() { const m = document.getElementById('textVoz').value; if(!m) return; await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) }); document.getElementById('textVoz').value = ""; loadData(); }
         async function enviarManual() {
             const p = { ind: +document.getElementById('m-ind').value, did: +document.getElementById('m-did').value, cab: +document.getElementById('m-cab').value, ben: +document.getElementById('m-ben').value, tag: +document.getElementById('m-tag').value, res: +document.getElementById('m-res').value, com: +document.getElementById('m-com').value, hm: +document.getElementById('m-hm').value, ht: +document.getElementById('m-ht').value };
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) }); loadData();
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) });
+            loadData();
         }
 
         window.onload = function() {
-            if(localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); }
+            if(localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
             const ahora = new Date();
             document.getElementById('filtroMes').value = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
             loadData();
