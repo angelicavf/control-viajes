@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>Inverti2s Elite - Full</title>
+    <title>Inverti2s Elite - Sistema Integrado</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; }
@@ -71,29 +71,28 @@
                 <h3 style="text-align:center; margin:0">💸 Gasto Diario</h3>
                 <label>Categoría</label>
                 <select id="g-cat">
-                   <option value="Vivienda">🏠 Vivienda</option>
-          <option value="Alimentación">🛒 Alimentación</option>
-          <option value="Entretencion/Ocio">🎭 Entretención</option>
-          <option value="Telefonia y Suscripciones">☎️ Telefonia/Suscripciones</option>
-          <option value="Salud">🏥 Salud/Cuidado Personal</option>
-          <option value="Inversiones">💰 Inversiones</option>
-          <option value="Deudas">💳 Deudas</option>
-          <option value="Educacion">📚 Educación</option>
-          <option value="Mascotas">🐕‍🦺 Mascotas</option>
-          <option value="Hija">👧🏻 Hija</option>
-          <option value="Personal">❤️ Personal</option>
-          <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
+                  <option value="Vivienda">🏠 Vivienda</option>
+                  <option value="Alimentación">🛒 Alimentación</option>
+                  <option value="Entretencion/Ocio">🎭 Entretención</option>
+                  <option value="Telefonia y Suscripciones">☎️ Telefonia/Suscripciones</option>
+                  <option value="Salud">🏥 Salud/Cuidado Personal</option>
+                  <option value="Inversiones">💰 Inversiones</option>
+                  <option value="Deudas">💳 Deudas</option>
+                  <option value="Educacion">📚 Educación</option>
+                  <option value="Mascotas">🐕‍🦺 Mascotas</option>
+                  <option value="Hija">👧🏻 Hija</option>
+                  <option value="Personal">❤️ Personal</option>
+                  <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
                 </select>
                 <input type="text" id="g-desc" placeholder="Descripción">
                 <input type="number" id="g-monto" placeholder="Monto ($)" inputmode="numeric">
                 <label>Método de Pago</label>
                 <select id="g-met">
                     <option value="Efectivo">💵 Efectivo</option>
-      <option value="Transferencia">💱 Transferencia</option>
-      <option value="Débito">💳 Débito</option>
-      <option value="Crédito TENPO">💳 TDC Tenpo</option>
-      <option value="Crédito SANTANDER">💳 TDC Santander</option>
-
+                    <option value="Transferencia">💱 Transferencia</option>
+                    <option value="Débito">💳 Débito</option>
+                    <option value="Crédito TENPO">💳 TDC Tenpo</option>
+                    <option value="Crédito SANTANDER">💳 TDC Santander</option>
                 </select>
                 <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
 
@@ -199,7 +198,6 @@
             if(parent === 'pan' || parent === 'his') setTimeout(loadData, 100);
         }
 
-        // LÓGICA EDICIÓN
         function openEdit(row) {
             editingRow = row;
             const r = cacheViajes.find(x => x.row === row);
@@ -224,7 +222,6 @@
         }
         function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
-        // GASTOS FIJOS
         function toggleFijos() {
             const c = document.getElementById('f-content'), a = document.getElementById('f-arrow');
             const isHidden = c.style.display === 'none';
@@ -271,7 +268,6 @@
             loadFijos();
         }
 
-        // CARGA DE DATOS GLOBAL
         async function loadData() {
             const fValue = document.getElementById('filtroMes').value;
             if(!fValue) return;
@@ -280,7 +276,6 @@
             const d = await r.json();
             cacheViajes = d.records;
 
-            // Stats Viajes
             document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
             document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
             document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
@@ -288,11 +283,8 @@
             document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
             document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
             document.getElementById('s-prom-sem').innerText = "Semanal: " + (d.stats.promSemanal || 0) + "h";
-
-            // Stats Gastos
             document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
 
-            // --- Generar Etiquetas de Gastos en Panel ---
             let htmlGastos = "";
             const iconos = { 
                 "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", 
@@ -309,22 +301,21 @@
             }
             document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
 
-            // Historial Viajes (Con color rojo si es negativo)
             document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
                 <td>${String(r.f).substring(0,10)}</td>
-                <td>$${r.bru.toLocaleString()}</td>
-                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${r.net.toLocaleString()}</td>
+                <td>$${(r.bru || 0).toLocaleString()}</td>
+                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
                 <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
             </tr>`).join('');
 
-            // Historial Gastos (Con fecha y método debajo)
             document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
                 <td style="text-align:left">
                     <b>${g.cat}</b><br>
+                    <small>${g.desc || ''}</small><br>
                     <small style="color:#999">${g.fecha}</small>
                 </td>
                 <td>
-                    $${g.monto.toLocaleString()}<br>
+                    $${(g.monto || 0).toLocaleString()}<br>
                     <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
                 </td>
                 <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
@@ -338,7 +329,7 @@
             charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { title: { display: true, text: 'Producción Bruta por App' } } } });
 
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8' }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335' }] }, options: { maintainAspectRatio: false } });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false } });
 
             if(charts.gastos) charts.gastos.destroy();
             charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { position: 'bottom' } } } });
