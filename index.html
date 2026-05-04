@@ -21,6 +21,11 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
         .chart-container { height: 350px; position: relative; }
+        
+        /* Estilo para gastos pagados (tachados) */
+        .pagado { text-decoration: line-through; color: #bbb !important; }
+        .btn-check { cursor: pointer; width: 20px; height: 20px; }
+
         @media (max-width: 600px) { .chart-container { height: 400px; } }
     </style>
 </head>
@@ -66,34 +71,36 @@
                 <h3 style="text-align:center; margin-top:0;">💸 Nuevo Gasto</h3>
                 <label>Categoría</label>
                 <select id="g-cat">
-                   <option value="Vivienda">🏠 Vivienda</option>
-          <option value="Alimentación">🛒 Alimentación</option>
-          <option value="Entretencion/Ocio">🎭 Entretención</option>
-          <option value="Telefonia y Suscripciones">☎️ Telefonia/Suscripciones</option>
-          <option value="Salud">🏥 Salud/Cuidado Personal</option>
-          <option value="Inversiones">💰 Inversiones</option>
-          <option value="Deudas">💳 Deudas</option>
-          <option value="Educacion">📚 Educación</option>
-          <option value="Mascotas">🐕‍🦺 Mascotas</option>
-          <option value="Hija">👧🏻 Hija</option>
-          <option value="Personal">❤️ Personal</option>
-          <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
+                    <option value="Vivienda">🏠 Vivienda</option>
+                    <option value="Alimentación">🛒 Alimentación</option>
+                    <option value="Entretencion/Ocio">🎭 Entretención</option>
+                    <option value="Telefonia/Suscripciones">☎️ Telefonia/Suscripciones</option>
+                    <option value="Salud">🏥 Salud/Cuidado Personal</option>
+                    <option value="Inversiones">💰 Inversiones</option>
+                    <option value="Deudas">💳 Deudas</option>
+                    <option value="Educacion">📚 Educación</option>
+                    <option value="Mascotas">🐕‍🦺 Mascotas</option>
+                    <option value="Hija">👧🏻 Hija</option>
+                    <option value="Personal">❤️ Personal</option>
+                    <option value="Meriendas">🥞 Meriendas</option>
                 </select>
                 <input type="text" id="g-desc" placeholder="Ej: Supermercado">
                 <input type="number" id="g-monto" placeholder="Monto ($)">
                 <label>Método de Pago</label>
                 <select id="g-met">
                     <option value="Efectivo">💵 Efectivo</option>
-      <option value="Transferencia">💱 Transferencia</option>
-      <option value="Débito">💳 Débito</option>
-      <option value="Crédito TENPO">💳 TDC Tenpo</option>
-      <option value="Crédito SANTANDER">💳 TDC Santander</option>
+                    <option value="Transferencia">💱 Transferencia</option>
+                    <option value="Débito">💳 Débito</option>
+                    <option value="TDC Tenpo">💳 TDC Tenpo</option>
+                    <option value="TDC Santander">💳 TDC Santander</option>
                 </select>
+                <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin: 10px 0;">REGISTRAR GASTO</button>
+
                 <button onclick="toggleFijos()" style="width: 100%; padding: 15px; border: none; background: #eee; border-radius: 15px 15px 0 0; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer;">
                     <span>📌 Guía de Gastos Fijos</span>
                     <span id="f-arrow">▼</span>
                 </button>
-                <div id="f-content" style="display: none; padding: 10px;">
+                <div id="f-content" style="display: none; padding: 10px; border: 1px solid #eee; border-top:none; border-radius: 0 0 15px 15px;">
                     <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                         <input type="text" id="f-nom" placeholder="Nombre">
                         <input type="number" id="f-mon" placeholder="$">
@@ -179,15 +186,67 @@
             if(isHidden) loadFijos();
         }
 
+        // --- LÓGICA GASTOS FIJOS (RADIO + EQUIS) ---
         async function loadFijos() {
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
             const d = await r.json();
+            
+            // Estado de "pagados" guardado localmente para que no se borren de la guía
+            const pagadosLocal = JSON.parse(localStorage.getItem('pagados_fijos') || '[]');
+            
             let total = 0;
             document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
-                total += g.monto;
-                return `<tr><td style="text-align:left;">${g.nombre}</td><td>$${g.monto.toLocaleString()}</td><td><button onclick="pagarFijo(${g.row},'${g.nombre}',${g.monto})" style="border:none;background:none;font-size:1.2rem;">✔️</button></td></tr>`;
+                const esPagado = pagadosLocal.includes(g.row);
+                if(!esPagado) total += g.monto;
+
+                return `
+                <tr>
+                    <td style="text-align:left; width: 60%;" class="${esPagado ? 'pagado' : ''}">
+                        ${g.nombre}
+                    </td>
+                    <td class="${esPagado ? 'pagado' : ''}">$${g.monto.toLocaleString()}</td>
+                    <td style="display: flex; gap: 10px; justify-content: center;">
+                        <input type="radio" class="btn-check" onclick="marcarComoPagado(${g.row}, '${g.nombre}', ${g.monto})" ${esPagado ? 'checked' : ''}>
+                        <button onclick="deleteFijoDefinitivo(${g.row})" style="border:none; background:none; color:red; font-weight:bold; cursor:pointer;">X</button>
+                    </td>
+                </tr>`;
             }).join('');
             document.getElementById('f-total-guia').innerText = "$" + total.toLocaleString();
+        }
+
+        async function marcarComoPagado(row, nom, mon) {
+            let pagadosLocal = JSON.parse(localStorage.getItem('pagados_fijos') || '[]');
+            
+            if(!pagadosLocal.includes(row)) {
+                if(confirm(`¿Registrar pago de ${nom} en gastos diarios?`)) {
+                    pagadosLocal.push(row);
+                    localStorage.setItem('pagados_fijos', JSON.stringify(pagadosLocal));
+                    
+                    // Registrar en gastos diarios (hoja gastos_diarios)
+                    await fetch(API, { method: 'POST', body: JSON.stringify({
+                        action:"createGasto", 
+                        payload:{categoria:"Vivienda", descripcion:nom, monto:mon, metodoPago:"Débito"}
+                    })});
+                    
+                    loadFijos(); loadData();
+                }
+            } else {
+                // Si ya estaba pagado y haces click, podrías desmarcarlo si quisieras, 
+                // pero por ahora lo dejamos fijo como en tu imagen.
+            }
+        }
+
+        async function deleteFijoDefinitivo(row) {
+            if(confirm("¿Eliminar este gasto de la guía definitivamente?")) {
+                await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) });
+                
+                // Limpiar de la lista de "tachados" local
+                let pagadosLocal = JSON.parse(localStorage.getItem('pagados_fijos') || '[]');
+                pagadosLocal = pagadosLocal.filter(id => id !== row);
+                localStorage.setItem('pagados_fijos', JSON.stringify(pagadosLocal));
+                
+                loadFijos();
+            }
         }
 
         async function addFijo() {
@@ -199,14 +258,7 @@
             loadFijos();
         }
 
-        async function pagarFijo(row, nom, mon) {
-            if(confirm(`¿Marcar ${nom} como pagado?`)) {
-                await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) });
-                await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload:{categoria:"Vivienda", descripcion:nom, monto:mon, metodoPago:"Débito"}}) });
-                loadFijos(); loadData();
-            }
-        }
-
+        // --- LÓGICA GENERAL ---
         async function loadData() {
             const fValue = document.getElementById('filtroMes').value;
             const f = fValue.split('-');
@@ -233,7 +285,7 @@
         }
 
         async function guardarGasto() {
-            const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: "Débito" };
+            const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload: p}) });
             document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
             alert("Gasto registrado"); loadData();
