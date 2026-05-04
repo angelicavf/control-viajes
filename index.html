@@ -14,13 +14,12 @@
         .card { background: white; margin: 10px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .sub-nav { display: flex; gap: 10px; margin: 0 10px 10px; background: #eee; padding: 5px; border-radius: 10px; }
-        .sub-nav button { flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; background: none; transition: 0.3s; }
+        .sub-nav button { flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; background: none; }
         .sub-nav button.active { background: white; color: var(--p); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;}
         label { display: block; font-size: 0.7rem; font-weight: bold; color: #666; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        .main-stat { text-align:center; padding:15px; border-radius:12px; }
         .chart-container { height: 350px; position: relative; }
         @media (max-width: 600px) { .chart-container { height: 400px; } }
     </style>
@@ -90,7 +89,24 @@
       <option value="Crédito TENPO">💳 TDC Tenpo</option>
       <option value="Crédito SANTANDER">💳 TDC Santander</option>
                 </select>
-                <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
+                <button onclick="toggleFijos()" style="width: 100%; padding: 15px; border: none; background: #eee; border-radius: 15px 15px 0 0; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer;">
+                    <span>📌 Guía de Gastos Fijos</span>
+                    <span id="f-arrow">▼</span>
+                </button>
+                <div id="f-content" style="display: none; padding: 10px;">
+                    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                        <input type="text" id="f-nom" placeholder="Nombre">
+                        <input type="number" id="f-mon" placeholder="$">
+                        <button onclick="addFijo()" style="background:var(--p); color:white; border:none; border-radius:8px; padding:0 15px; font-size:1.2rem;">+</button>
+                    </div>
+                    <table id="tableFijos">
+                        <tbody></tbody>
+                    </table>
+                    <div style="background: #f1f3f4; margin-top: 10px; padding: 10px; border-radius: 10px; font-weight: bold; font-size: 0.8rem; display: flex; justify-content: space-between;">
+                        <span>TOTAL GUÍA:</span>
+                        <span id="f-total-guia">$0</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -101,24 +117,17 @@
             <button id="sub-pan-viajes" class="active" onclick="subTab('pan', 'viajes')">Viajes</button>
             <button id="sub-pan-gastos" onclick="subTab('pan', 'gastos')">Gastos</button>
         </div>
-
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-                <div class="card main-stat" style="background:#e8f5e9;"><small>NETO MES + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
-                <div class="card main-stat" style="background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
-                <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
-                <div class="card" style="margin:0; text-align:center;"><small>PROM. HORAS</small><br><span id="s-prom" style="color:#1a73e8; font-weight:bold">0h</span><br><small id="s-prom-sem" style="font-size:0.65rem; color:#666">Semanal: 0h</small></div>
+                <div class="card" style="text-align:center; background:#e8f5e9; grid-column: span 2;"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.6rem; color:#2e7d32">$0</strong></div>
+                <div class="card" style="text-align:center; background:#e3f2fd;"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.2rem; color:#1565c0">$0</strong></div>
+                <div class="card" style="text-align:center;"><small>RESERVA</small><br><strong id="s-res" style="font-size:1.2rem; color:#673ab7">$0</strong></div>
             </div>
-            <div class="card"><canvas id="chartApp"></canvas></div>
             <div class="card chart-container"><canvas id="chartLine"></canvas></div>
         </div>
-
         <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat" style="background:#fff3e0;"><small>TOTAL GASTADO MES</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
+            <div class="card" style="text-align:center; background:#fff3e0;"><small>TOTAL GASTADO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
-            <div id="gastos-list" style="margin: 0 10px;"></div>
         </div>
     </div>
 
@@ -135,14 +144,14 @@
         </div>
         <div id="view-his-gastos" class="card" style="display:none; padding:0; overflow-x:auto;">
             <table id="tableGastos">
-                <thead><tr><th>Detalle Gasto</th><th>Monto</th><th>⚙️</th></tr></thead>
+                <thead><tr><th>Detalle</th><th>Monto</th><th>⚙️</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec"; 
+        const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec";
         let charts = {};
 
         function tab(id) {
@@ -158,130 +167,86 @@
             document.getElementById(`view-${parent}-gastos`).style.display = type === 'gastos' ? 'block' : 'none';
             document.querySelectorAll(`#${parent} .sub-nav button`).forEach(b => b.classList.remove('active'));
             document.getElementById(`sub-${parent}-${type}`).classList.add('active');
-            if(parent === 'pan') setTimeout(loadData, 100);
+            if(type === 'gastos') loadFijos();
+        }
+
+        function toggleFijos() {
+            const c = document.getElementById('f-content');
+            const a = document.getElementById('f-arrow');
+            const isHidden = c.style.display === 'none';
+            c.style.display = isHidden ? 'block' : 'none';
+            a.innerText = isHidden ? '▲' : '▼';
+            if(isHidden) loadFijos();
+        }
+
+        async function loadFijos() {
+            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
+            const d = await r.json();
+            let total = 0;
+            document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
+                total += g.monto;
+                return `<tr><td style="text-align:left;">${g.nombre}</td><td>$${g.monto.toLocaleString()}</td><td><button onclick="pagarFijo(${g.row},'${g.nombre}',${g.monto})" style="border:none;background:none;font-size:1.2rem;">✔️</button></td></tr>`;
+            }).join('');
+            document.getElementById('f-total-guia').innerText = "$" + total.toLocaleString();
+        }
+
+        async function addFijo() {
+            const n = document.getElementById('f-nom').value;
+            const m = document.getElementById('f-mon').value;
+            if(!n || !m) return;
+            await fetch(API, { method: 'POST', body: JSON.stringify({action:"createFijo", payload:{nombre:n, monto:m}}) });
+            document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = "";
+            loadFijos();
+        }
+
+        async function pagarFijo(row, nom, mon) {
+            if(confirm(`¿Marcar ${nom} como pagado?`)) {
+                await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) });
+                await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload:{categoria:"Vivienda", descripcion:nom, monto:mon, metodoPago:"Débito"}}) });
+                loadFijos(); loadData();
+            }
         }
 
         async function loadData() {
             const fValue = document.getElementById('filtroMes').value;
-            if(!fValue) return;
             const f = fValue.split('-');
+            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
+            const d = await r.json();
+
+            document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
+            document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
+            document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
+            document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
+
+            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr><td>${String(r.f).substring(0,10)}</td><td>$${r.bru.toLocaleString()}</td><td>$${r.net.toLocaleString()}</td><td><button onclick="deleteReg(${r.row})">🗑️</button></td></tr>`).join('');
+            document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr><td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc}</small></td><td>$${g.monto.toLocaleString()}</td><td><button onclick="deleteGasto(${g.row})">🗑️</button></td></tr>`).join('');
             
-            try {
-                const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
-                const d = await r.json();
-
-                // Stats Viajes
-                document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
-                document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
-                document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
-                document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
-                document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
-                document.getElementById('s-prom').innerText = (d.stats.promedioHoras || 0) + "h";
-                document.getElementById('s-prom-sem').innerText = "Semanal: " + (d.stats.promSemanal || 0) + "h";
-
-                // Stats Gastos
-                document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
-                let htmlG = "";
-                for(let cat in d.statsGastos.porCategoria) {
-                    htmlG += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);"><span>${cat}</span><b>$${d.statsGastos.porCategoria[cat].toLocaleString()}</b></div>`;
-                }
-                document.getElementById('gastos-list').innerHTML = htmlG;
-
-                // Tabla Viajes
-                document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `
-                    <tr>
-                        <td>${String(r.f).substring(0,10)}</td>
-                        <td>$${r.bru.toLocaleString()}</td>
-                        <td style="color:green">$${r.net.toLocaleString()}</td>
-                        <td><button onclick="deleteReg(${r.row})" style="border:none; background:none; font-size:1.2rem;">🗑️</button></td>
-                    </tr>`).join('');
-
-                // Tabla Gastos
-                document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `
-                    <tr>
-                        <td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc}</small><br><small style="color:#999">${g.fecha}</small></td>
-                        <td>$${g.monto.toLocaleString()}<br><small>${g.met}</small></td>
-                        <td><button onclick="deleteGasto(${g.row})" style="border:none; background:none; font-size:1.2rem;">🗑️</button></td>
-                    </tr>`).join('');
-
-                renderCharts(d);
-            } catch (e) { console.error(e); }
+            renderCharts(d);
         }
 
         function renderCharts(d) {
-            // Chart App Barras
-            if(charts.app) charts.app.destroy();
-            charts.app = new Chart(document.getElementById('chartApp'), { 
-                type: 'bar', 
-                data: { 
-                    labels: ['Indriver','DiDi','Cabify'], 
-                    datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] 
-                }, 
-                options: { plugins: { title: { display: true, text: 'Producción por App' } } } 
-            });
-
-            // Chart Lineas Viajes
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { 
-                type: 'line', 
-                data: { 
-                    labels: d.stats.hist.map(h => h.d), 
-                    datasets: [
-                        { label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, 
-                        { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }
-                    ] 
-                }, 
-                options: { maintainAspectRatio: false, responsive: true } 
-            });
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8' }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335' }] }, options: { maintainAspectRatio: false } });
 
-            // Chart Gastos (Doughnut)
             if(charts.gastos) charts.gastos.destroy();
-            const gData = d.statsGastos.porCategoria;
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { 
-                type: 'doughnut', 
-                data: { 
-                    labels: Object.keys(gData), 
-                    datasets: [{ data: Object.values(gData), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] 
-                }, 
-                options: { plugins: { legend: { position: 'bottom' } } } 
-            });
+            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'] }] } });
         }
 
         async function guardarGasto() {
-            const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
-            if(!p.monto) return alert("Ingresa monto");
+            const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: "Débito" };
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload: p}) });
             document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
-            alert("Gasto guardado"); loadData();
+            alert("Gasto registrado"); loadData();
         }
 
-        async function deleteGasto(row) { if(confirm("¿Eliminar gasto?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteGasto", row}) }); loadData(); } }
-        async function deleteReg(row) { if(confirm("¿Eliminar viaje?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row}) }); loadData(); } }
-        
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        rec.lang = 'es-CL';
-        document.getElementById('micBtn').onclick = () => rec.start();
-        rec.onstart = () => document.getElementById('micBtn').style.opacity = "0.5";
-        rec.onresult = (e) => { document.getElementById('textVoz').value = e.results[0][0].transcript; document.getElementById('micBtn').style.opacity = "1"; };
-        
-        async function enviarVoz() { const m = document.getElementById('textVoz').value; if(!m) return; await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) }); document.getElementById('textVoz').value = ""; loadData(); }
-        async function enviarManual() {
-            const p = { ind: +document.getElementById('m-ind').value, did: +document.getElementById('m-did').value, cab: +document.getElementById('m-cab').value, ben: +document.getElementById('m-ben').value, tag: +document.getElementById('m-tag').value, res: +document.getElementById('m-res').value, com: +document.getElementById('m-com').value, hm: +document.getElementById('m-hm').value, ht: +document.getElementById('m-ht').value };
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) }); loadData();
-        }
+        async function deleteGasto(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteGasto", row}) }); loadData(); } }
+        async function deleteReg(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row}) }); loadData(); } }
 
-        // 1. Asegúrate de que el input tenga el valor antes de cargar
-window.onload = function() {
-    const ahora = new Date();
-    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-    const anio = ahora.getFullYear();
-    
-    // Seteamos el input de mes con el formato YYYY-MM que requiere el navegador
-    document.getElementById('filtroMes').value = `${anio}-${mes}`;
-    
-    // Ejecutamos la carga de datos inicial
-    loadData();
-};
+        window.onload = function() {
+            const ahora = new Date();
+            document.getElementById('filtroMes').value = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
+            loadData();
+        };
     </script>
 </body>
 </html>
