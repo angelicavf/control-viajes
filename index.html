@@ -72,28 +72,33 @@
                 <label>Categoría</label>
                 <select id="g-cat">
                     <option value="Vivienda">🏠 Vivienda</option>
-                    <option value="Alimentación">🛒 Alimentación</option>
-                    <option value="Meriendas">🥞Meriendas</option>
-                    <option value="Transporte">🚗 Transporte</option>
-                    <option value="Ocio">🎭 Ocio</option>
-                    <option value="Salud">🏥 Salud</option>
-                    <option value="Hija">👧🏻 Hija</option>
-                    <option value="Mascotas">🐕‍🦺 Mascotas</option>
+          <option value="Alimentación">🛒 Alimentación</option>
+          <option value="Entretencion/Ocio">🎭 Entretención</option>
+          <option value="Telefonia y Suscripciones">☎️ Telefonia/Suscripciones</option>
+          <option value="Salud">🏥 Salud/Cuidado Personal</option>
+          <option value="Inversiones">💰 Inversiones</option>
+          <option value="Deudas">💳 Deudas</option>
+          <option value="Educacion">📚 Educación</option>
+          <option value="Mascotas">🐕‍🦺 Mascotas</option>
+          <option value="Hija">👧🏻 Hija</option>
+          <option value="Personal">❤️ Personal</option>
+          <option value="Desayunos"> 🥞 Desayunos/Meriendas</option>
+
                 </select>
                 <input type="text" id="g-desc" placeholder="Descripción">
                 <input type="number" id="g-monto" placeholder="Monto ($)" inputmode="numeric">
                 <label>Método de Pago</label>
                 <select id="g-met">
-                    <option value="Efectivo">💵 Efectivo</option>
-                    <option value="Transferencia">💱 Transferencia</option>
-                    <option value="Débito">💳 Débito</option>
-                    <option value="TDC Tenpo">💳 TDC Tenpo</option>
+                  <option value="Transferencia">💱 Transferencia</option>
+      <option value="Débito">💳 Débito</option>
+      <option value="Crédito TENPO">💳 TDC Tenpo</option>
+      <option value="Crédito SANTANDER">💳 TDC Santander</option>
                 </select>
                 <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
 
                 <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
                     <button onclick="toggleFijos()" style="width: 100%; padding: 15px; border: none; background: #eee; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; color: #555;">
-                        <span>📌 Guía de Gastos Fijos</span>
+                        <span>📌 Lista de Gastos Fijos</span>
                         <span id="f-arrow">▼</span>
                     </button>
                     <div id="f-content" style="display: none; padding: 10px; background: white;">
