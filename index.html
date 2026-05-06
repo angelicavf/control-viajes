@@ -8,18 +8,17 @@
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; --text: #333; --card-bg: #ffffff; --nav-bg: #ffffff; }
         
-        /* ESTILOS MODO OSCURO */
-        body.dark-mode { --bg: #121212; --text: #f1f1f1; --card-bg: #1e1e1e; --nav-bg: #1e1e1e; }
-        body.dark-mode .nav { border-bottom: 1px solid #333; box-shadow: none; }
+        /* ESTILOS MODO OSCURO CORREGIDOS */
+        body.dark-mode { --bg: #121212; --text: #f1f1f1; --card-bg: #1e1e1e; --nav-bg: #252525; } /* nav-bg ligeramente más claro que el fondo */
+        body.dark-mode .nav { border-bottom: 1px solid #333; box-shadow: 0 4px 12px rgba(0,0,0,0.5); background: var(--nav-bg); }
+        body.dark-mode .nav-btn { color: #bbbbbb; } /* Letras del menú menos oscuras */
         body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #2c2c2c; color: white; border-color: #444; }
         body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color: #333; color: #f1f1f1; }
-        body.dark-mode .sub-nav { background: #2c2c2c; }
-        body.dark-mode .sub-nav button { color: #aaa; }
-        body.dark-mode .sub-nav button.active { background: #1e1e1e; color: var(--p); }
-        body.dark-mode .card button[onclick*="toggle"] { background: #2c2c2c !important; color: #fff !important; }
+        body.dark-mode label { color: #aaa; } /* Etiquetas de los campos más claras */
+        body.dark-mode h4, body.dark-mode h3 { color: #fff; }
 
         body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 65px; transition: 0.3s; }
-        .nav { position: fixed; top: 0; width: 100%; background: var(--nav-bg); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
+        .nav { position: fixed; top: 0; width: 100%; background: var(--nav-bg); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; transition: 0.3s; }
         .nav-btn { flex: 1; padding: 18px; border: none; background: none; font-weight: bold; color: #5f6368; cursor: pointer; font-size: 0.8rem; }
         .nav-btn.active { color: var(--p); border-bottom: 4px solid var(--p); }
         
@@ -32,21 +31,28 @@
 
         .card { background: var(--card-bg); margin: 10px; padding: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .sub-nav { display: flex; gap: 10px; margin: 0 10px 10px; background: #eee; padding: 5px; border-radius: 10px; }
-        .sub-nav button { flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; background: none; }
-        .sub-nav button.active { background: white; color: var(--p); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* TARJETAS DEL PANEL SUAVIZADAS */
+        .stat-neto { background: #e8f5e9; border-left: 5px solid #a5d6a7; }
+        .stat-bruto { background: #e3f2fd; border-left: 5px solid #90caf9; }
+        .stat-gasto { background: #fff3e0; border-left: 5px solid #ffcc80; }
+        
+        body.dark-mode .stat-neto { background: #1b2e1c; border-left: 5px solid #2e7d32; }
+        body.dark-mode .stat-bruto { background: #1a2733; border-left: 5px solid #1565c0; }
+        body.dark-mode .stat-gasto { background: #2d241a; border-left: 5px solid #e67e22; }
+
+        .sub-nav { display: flex; gap: 10px; margin: 0 10px 10px; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 10px; }
+        body.dark-mode .sub-nav { background: #2c2c2c; }
+        .sub-nav button { flex: 1; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; background: none; color: inherit; }
+        .sub-nav button.active { background: var(--card-bg); color: var(--p); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
         input, select, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;}
         label { display: block; font-size: 0.7rem; font-weight: bold; color: #666; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
-        .strike { text-decoration: line-through; color: #bbb !important; }
         .chart-container { height: 350px; position: relative; }
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; }
         .modal-content { background:var(--card-bg); margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
-        
-        /* Botón de nota pequeño */
-        .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
     </style>
 </head>
 <body>
@@ -67,7 +73,7 @@
 
         <div id="view-reg-viajes">
             <div class="card" style="padding: 0; overflow: hidden;">
-                <button onclick="toggleVoz()" style="width: 100%; padding: 15px; border: none; background: #eee; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; color: #555;">
+                <button onclick="toggleVoz()" style="width: 100%; padding: 15px; border: none; background: rgba(0,0,0,0.05); font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; color: inherit;">
                     <span>🎤 Registro por Voz</span>
                     <span id="v-arrow">▼</span>
                 </button>
@@ -124,25 +130,6 @@
                     <option value="Crédito SANTANDER">💳 TDC Santander</option>
                 </select>
                 <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
-
-                <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
-                    <button onclick="toggleFijos()" style="width: 100%; padding: 15px; border: none; background: #eee; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; color: #555;">
-                        <span>📌 Guía de Gastos Fijos</span>
-                        <span id="f-arrow">▼</span>
-                    </button>
-                    <div id="f-content" style="display: none; padding: 10px; background: var(--card-bg);">
-                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                            <input type="text" id="f-nom" placeholder="Nombre">
-                            <input type="number" id="f-mon" placeholder="$" style="width:80px">
-                            <button onclick="addFijo()" style="background:var(--p); color:white; border:none; border-radius:8px; padding:0 15px; font-size:1.2rem;">+</button>
-                        </div>
-                        <table id="tableFijos"><tbody></tbody></table>
-                        <div style="background: #f1f3f4; margin-top: 10px; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; color: #333;">
-                            <span>PAGADO:</span>
-                            <span id="f-totalizador">$0 / $0</span>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -156,8 +143,8 @@
 
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-                <div class="card main-stat" style="background:#e8f5e9;"><small style="color:#222">NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
-                <div class="card main-stat" style="background:#e3f2fd;"><small style="color:#222">BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
+                <div class="card main-stat stat-neto"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
+                <div class="card main-stat stat-bruto"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
@@ -172,18 +159,9 @@
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat" style="background:#fff3e0;"><small style="color:#222">TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
+            <div class="card main-stat stat-gasto"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
             <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
-        </div>
-    </div>
-
-    <div id="noteModal" class="modal">
-        <div class="modal-content">
-            <h3 id="noteTitle" style="margin-top:0">Nota</h3>
-            <textarea id="noteArea" rows="5" placeholder="Escribe un detalle..."></textarea>
-            <button onclick="saveNote()" style="width:100%; padding:12px; background:var(--s); color:white; border:none; border-radius:10px; margin-top:15px; font-weight:bold;">GUARDAR NOTA</button>
-            <button onclick="closeNoteModal()" style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:10px; margin-top:10px;">Cerrar</button>
         </div>
     </div>
 
@@ -206,30 +184,14 @@
         </div>
     </div>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3 style="margin-top:0">Editar Viaje</h3>
-            <div id="editFields" class="grid"></div>
-            <button onclick="saveEdit()" style="width:100%; padding:12px; background:var(--s); color:white; border:none; border-radius:10px; margin-top:15px; font-weight:bold;">GUARDAR CAMBIOS</button>
-            <button onclick="closeModal()" style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:10px; margin-top:10px;">Cancelar</button>
-        </div>
-    </div>
-
     <script>
         const API = "https://script.google.com/macros/s/AKfycbwphJmnHdflG3EM2nhqp9ug5xquIkG_BzyfM9sjUD2V4Ncd3XhC3Xhiq0ZvdryXfNcoog/exec";
-        let charts = {}, cacheViajes = [], cacheFijos = [], editingRow = null, editingFijoRow = null;
+        let charts = {}, cacheViajes = [];
 
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-            if(charts.line) loadData(); 
-        }
-
-        function toggleVoz() {
-            const c = document.getElementById('v-content'), a = document.getElementById('v-arrow');
-            const isHidden = c.style.display === 'none';
-            c.style.display = isHidden ? 'block' : 'none';
-            a.innerText = isHidden ? '▲' : '▼';
+            loadData(); // Recarga para aplicar colores a gráficos
         }
 
         function tab(id) {
@@ -245,228 +207,81 @@
             document.getElementById(`view-${parent}-gastos`).style.display = type === 'gastos' ? 'block' : 'none';
             document.querySelectorAll(`#${parent} .sub-nav button`).forEach(b => b.classList.remove('active'));
             document.getElementById(`sub-${parent}-${type}`).classList.add('active');
-            if(type === 'gastos' && parent === 'reg') loadFijos();
-            if(parent === 'pan' || parent === 'his') setTimeout(loadData, 100);
+            loadData();
         }
 
-        function openEdit(row) {
-            editingRow = row;
-            const r = cacheViajes.find(x => x.row === row);
-            document.getElementById('editFields').innerHTML = `
-                <div><label>Indriver</label><input type="number" id="e-ind" value="${r.ind}"></div>
-                <div><label>DiDi</label><input type="number" id="e-did" value="${r.did}"></div>
-                <div><label>Cabify</label><input type="number" id="e-cab" value="${r.cab}"></div>
-                <div><label>Bencina</label><input type="number" id="e-ben" value="${r.ben}"></div>
-                <div><label>Tag</label><input type="number" id="e-tag" value="${r.tag}"></div>
-                <div><label>Reserva</label><input type="number" id="e-res" value="${r.res}"></div>
-                <div><label>Comisión</label><input type="number" id="e-com" value="${r.com}"></div>
-                <div><label>Hrs Mañana</label><input type="number" id="e-hm" value="${r.hm}"></div>
-                <div><label>Hrs Tarde</label><input type="number" id="e-ht" value="${r.ht}"></div>
-            `;
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        async function saveEdit() {
-            const p = { ind: +document.getElementById('e-ind').value, did: +document.getElementById('e-did').value, cab: +document.getElementById('e-cab').value, ben: +document.getElementById('e-ben').value, tag: +document.getElementById('e-tag').value, res: +document.getElementById('e-res').value, com: +document.getElementById('e-com').value, hm: +document.getElementById('e-hm').value, ht: +document.getElementById('e-ht').value };
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"update", row: editingRow, payload: p}) });
-            closeModal(); loadData();
-        }
-        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-
-        // --- GASTOS FIJOS ---
-        function toggleFijos() {
-            const c = document.getElementById('f-content'), a = document.getElementById('f-arrow');
-            const isHidden = c.style.display === 'none';
-            c.style.display = isHidden ? 'block' : 'none';
-            a.innerText = isHidden ? '▲' : '▼';
-            if(isHidden) loadFijos();
-        }
-
-        async function loadFijos() {
-            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
+        async function loadData() {
+            const fValue = document.getElementById('filtroMes').value;
+            if(!fValue) return;
+            const f = fValue.split('-');
+            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
             const d = await r.json();
-            cacheFijos = d.fijos;
-            const mesActual = document.getElementById('filtroMes').value;
-            const pagadosLocal = JSON.parse(localStorage.getItem(`f_pagados_${mesActual}`) || '[]');
-            let totalG = 0, totalP = 0;
-            document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
-                totalG += g.monto; const esP = pagadosLocal.includes(g.row); if(esP) totalP += g.monto;
-                return `<tr>
-                    <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
-                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
-                    <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
-                    <td>
-                        <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
-                        <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
-                    </td>
-                </tr>`;
-            }).join('');
-            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${totalP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalG.toLocaleString()}</span>`;
+            
+            // Actualizar tarjetas principales
+            document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
+            document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
+            document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
+            document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
+            document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
+            
+            if (d.statsGastos) {
+                document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
+            }
+
+            renderCharts(d);
+            
+            // Render de tablas
+            document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
+                <td>${String(r.f).substring(0,10)}</td>
+                <td>$${(r.bru || 0).toLocaleString()}</td>
+                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
+                <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button></td>
+            </tr>`).join('');
         }
-
-        // --- FUNCIONES DE NOTAS ---
-        function openNote(row) {
-            const fijo = cacheFijos.find(f => f.row === row);
-            editingFijoRow = row;
-            document.getElementById('noteTitle').innerText = "Nota: " + fijo.nombre;
-            document.getElementById('noteArea').value = fijo.nota || "";
-            document.getElementById('noteModal').style.display = 'block';
-        }
-
-        async function saveNote() {
-            const nota = document.getElementById('noteArea').value;
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"updateFijoNota", row: editingFijoRow, nota: nota}) });
-            closeNoteModal();
-            loadFijos();
-        }
-
-        function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
-
-        function tachado(row) {
-            const mes = document.getElementById('filtroMes').value;
-            let p = JSON.parse(localStorage.getItem(`f_pagados_${mes}`) || '[]');
-            p.includes(row) ? p = p.filter(i => i !== row) : p.push(row);
-            localStorage.setItem(`f_pagados_${mes}`, JSON.stringify(p));
-            loadFijos();
-        }
-
-        async function delFijo(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) }); loadFijos(); } }
-        async function addFijo() {
-            const n = document.getElementById('f-nom').value, m = document.getElementById('f-mon').value;
-            if(!n || !m) return;
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"createFijo", payload:{nombre:n, monto:m}}) });
-            document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = ""; loadFijos();
-        }
-
-       async function loadData() {
-    const fValue = document.getElementById('filtroMes').value;
-    if(!fValue) return;
-    const f = fValue.split('-');
-    const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
-    const d = await r.json();
-    cacheViajes = d.records;
-
-    // --- LÓGICA DE HORAS ---
-    const ahora = new Date();
-    
-    // 1. TOTAL SEMANA ANTERIOR (Lunes a Domingo Pasado)
-    const diaSemanaActual = ahora.getDay();
-    const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
-    const lunesPasado = new Date(ahora);
-    lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
-    lunesPasado.setHours(0,0,0,0);
-
-    const domingoPasado = new Date(lunesPasado);
-    domingoPasado.setDate(lunesPasado.getDate() + 6);
-    domingoPasado.setHours(23,59,59,999);
-
-    let totalHorasSemanaAnterior = 0;
-    cacheViajes.forEach(reg => {
-        const fechaReg = new Date(reg.f);
-        if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
-            totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-        }
-    });
-
-    // 2. PROMEDIO 5 DÍAS CALENDARIO ANTERIORES (Estricto)
-    let sumaHoras5Dias = 0;
-    for (let i = 1; i <= 5; i++) {
-        // Calculamos la fecha de i días atrás
-        const fechaBusqueda = new Date(ahora);
-        fechaBusqueda.setDate(ahora.getDate() - i);
-        const fechaBusquedaStr = fechaBusqueda.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-        // Buscamos en el cache si hay un registro que coincida con ese día
-        const registroDia = cacheViajes.find(reg => {
-            const fReg = new Date(reg.f);
-            return fReg.toISOString().split('T')[0] === fechaBusquedaStr;
-        });
-
-        if (registroDia) {
-            sumaHoras5Dias += (Number(registroDia.hm) || 0) + (Number(registroDia.ht) || 0);
-        }
-        // Si no hay registro, suma 0 (por eso es un promedio estricto de 5 días)
-    }
-    const prom5 = (sumaHoras5Dias / 5).toFixed(1);
-
-    // Actualizamos los textos en la interfaz
-    document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
-    document.getElementById('s-prom-5').innerText = "Prom. 5 días ant: " + prom5 + "h";
-
-    // --- RESTO DE ESTADÍSTICAS Y TABLAS ---
-    document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
-    document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
-    document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
-    document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
-    document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
-    document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
-
-    let htmlGastos = "";
-    const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
-    for (let cat in d.statsGastos.porCategoria) {
-        let ico = iconos[cat] || "📦";
-        htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
-            <span style="color:var(--text)">${ico} ${cat}</span>
-            <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
-        </div>`;
-    }
-    document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
-
-    document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
-        <td>${String(r.f).substring(0,10)}</td>
-        <td>$${(r.bru || 0).toLocaleString()}</td>
-        <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
-        <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-    </tr>`).join('');
-
-    document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
-        <td style="text-align:left">
-            <b>${g.cat}</b><br>
-            <small>${g.desc || ''}</small><br>
-            <small style="color:#999">${g.fecha}</small>
-        </td>
-        <td>
-            $${(g.monto || 0).toLocaleString()}<br>
-            <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
-        </td>
-        <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-    </tr>`).join('');
-    
-    renderCharts(d);
-}
 
         function renderCharts(d) {
             const isDark = document.body.classList.contains('dark-mode');
-            const tickColor = isDark ? '#f1f1f1' : '#666';
+            const textColor = isDark ? '#f1f1f1' : '#666';
             const gridColor = isDark ? '#333' : '#eee';
+
             if(charts.app) charts.app.destroy();
-            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App', color: tickColor } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
+            charts.app = new Chart(document.getElementById('chartApp'), { 
+                type: 'bar', 
+                data: { 
+                    labels: ['Ind','Didi','Cab'], 
+                    datasets: [{ 
+                        data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], 
+                        backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] 
+                    }] 
+                }, 
+                options: { 
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { ticks: { color: textColor } },
+                        y: { ticks: { color: textColor }, grid: { color: gridColor } }
+                    }
+                } 
+            });
+
             if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tickColor } } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
-            if(charts.gastos) charts.gastos.destroy();
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { labels: { color: tickColor }, position: 'bottom' } } } });
-        }
-
-        async function guardarGasto() {
-            const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
-            if(!p.monto) return alert("Ingresa monto");
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"createGasto", payload: p}) });
-            document.getElementById('g-desc').value = ""; document.getElementById('g-monto').value = "";
-            alert("Gasto registrado"); loadData();
-        }
-
-        async function deleteGasto(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteGasto", row}) }); loadData(); } }
-        async function deleteReg(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"delete", row}) }); loadData(); } }
-        
-        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        rec.lang = 'es-CL';
-        document.getElementById('micBtn').onclick = () => rec.start();
-        rec.onresult = (e) => { document.getElementById('textVoz').value = e.results[0][0].transcript; };
-        
-        async function enviarVoz() { const m = document.getElementById('textVoz').value; if(!m) return; await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) }); document.getElementById('textVoz').value = ""; loadData(); }
-        async function enviarManual() {
-            const p = { ind: +document.getElementById('m-ind').value, did: +document.getElementById('m-did').value, cab: +document.getElementById('m-cab').value, ben: +document.getElementById('m-ben').value, tag: +document.getElementById('m-tag').value, res: +document.getElementById('m-res').value, com: +document.getElementById('m-com').value, hm: +document.getElementById('m-hm').value, ht: +document.getElementById('m-ht').value };
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) }); loadData();
+            charts.line = new Chart(document.getElementById('chartLine'), { 
+                type: 'line', 
+                data: { 
+                    labels: d.stats.hist.map(h => h.d), 
+                    datasets: [
+                        { label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, 
+                        { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }
+                    ] 
+                }, 
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { labels: { color: textColor } } },
+                    scales: { 
+                        x: { ticks: { color: textColor } },
+                        y: { ticks: { color: textColor }, grid: { color: gridColor } }
+                    }
+                } 
+            });
         }
 
         window.onload = function() {
