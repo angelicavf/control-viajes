@@ -9,32 +9,14 @@
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; --text: #333; --card-bg: #ffffff; --nav-bg: #ffffff; }
         
         /* ESTILOS MODO OSCURO */
-        body.dark-mode { 
-    --bg: #121212; 
-    --text: #f1f1f1; 
-    --card-bg: #1e1e1e; 
-    --nav-bg: #252525; /* Nav un poco más clara que el fondo */
-}
-        body.dark-mode .nav { 
-    border-bottom: 1px solid #333; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);}
-        body.dark-mode .nav-btn { color: #bbb; } /* Letras del menú más claras */
-        body.dark-mode label { color: #aaa; }    /* Etiquetas de registro más blancas */
-        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { 
-    background: #2c2c2c; 
-    color: white; 
-    border-color: #444; 
-}
+        body.dark-mode { --bg: #121212; --text: #f1f1f1; --card-bg: #1e1e1e; --nav-bg: #1e1e1e; }
+        body.dark-mode .nav { border-bottom: 1px solid #333; box-shadow: none; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #2c2c2c; color: white; border-color: #444; }
         body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color: #333; color: #f1f1f1; }
         body.dark-mode .sub-nav { background: #2c2c2c; }
         body.dark-mode .sub-nav button { color: #aaa; }
         body.dark-mode .sub-nav button.active { background: #1e1e1e; color: var(--p); }
-        body.dark-mode .card small, 
-body.dark-mode .card label,
-body.dark-mode #s-prom-5 { 
-    color: #ffffff !important; 
-    opacity: 0.9;
-}
+        body.dark-mode .card button[onclick*="toggle"] { background: #2c2c2c !important; color: #fff !important; }
 
         body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 65px; transition: 0.3s; }
         .nav { position: fixed; top: 0; width: 100%; background: var(--nav-bg); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; }
@@ -65,23 +47,6 @@ body.dark-mode #s-prom-5 {
         
         /* Botón de nota pequeño */
         .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
-
-/* ... otros estilos que ya tienes ... */
-        
-        .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
-
-        /* --- PEGA AQUÍ LO NUEVO --- */
-        .stat-neto { background: #e8f5e9 !important; border-left: 5px solid #a5d6a7; }
-        .stat-bruto { background: #e3f2fd !important; border-left: 5px solid #90caf9; }
-        .stat-gasto { background: #fff3e0 !important; border-left: 5px solid #ffcc80; }
-
-        body.dark-mode .stat-neto { background: #1b2e1c !important; border-left: 5px solid #2e7d32; }
-        body.dark-mode .stat-bruto { background: #1a2733 !important; border-left: 5px solid #1565c0; }
-        body.dark-mode .stat-gasto { background: #2d241a !important; border-left: 5px solid #e67e22; }
-        /* --- AQUÍ TERMINA LO NUEVO --- */
-
- 
-        
     </style>
 </head>
 <body>
@@ -191,8 +156,8 @@ body.dark-mode #s-prom-5 {
 
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-               <div class="card main-stat stat-neto"><small>NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
-                <div class="card main-stat stat-bruto"><small>BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
+                <div class="card main-stat" style="background:#e8f5e9;"><small style="color:#222">NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
+                <div class="card main-stat" style="background:#e3f2fd;"><small style="color:#222">BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
@@ -207,19 +172,12 @@ body.dark-mode #s-prom-5 {
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-    <div class="card main-stat stat-gasto">
-        <small>TOTAL GASTADO DIARIO</small><br>
-        <strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong>
-    </div>
-
-    <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
-
-    <div class="card" style="max-width: 350px; margin: 10px auto;">
-        <div style="height: 250px; position: relative;">
-            <canvas id="chartGastos"></canvas>
+            <div class="card main-stat" style="background:#fff3e0;"><small style="color:#222">TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
+             <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
+            <div class="card"><canvas id="chartGastos"></canvas></div>
+           
         </div>
     </div>
-</div>
 
     <div id="noteModal" class="modal">
         <div class="modal-content">
@@ -381,169 +339,114 @@ body.dark-mode #s-prom-5 {
             document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = ""; loadFijos();
         }
 
-     async function loadData() {
+       async function loadData() {
     const fValue = document.getElementById('filtroMes').value;
-    if (!fValue) return;
+    if(!fValue) return;
     const f = fValue.split('-');
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
+    const d = await r.json();
+    cacheViajes = d.records;
+
+    // --- LÓGICA DE HORAS ---
+    const ahora = new Date();
     
-    try {
-        const response = await fetch(API, { 
-            method: 'POST', 
-            body: JSON.stringify({ action: "read", mes: f[1], anio: f[0] }) 
-        });
-        const d = await response.json();
-        
-        // Guardamos en cache y aseguramos que sea un array
-        cacheViajes = d.records || [];
+    // 1. TOTAL SEMANA ANTERIOR (Lunes a Domingo Pasado)
+    const diaSemanaActual = ahora.getDay();
+    const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
+    const lunesPasado = new Date(ahora);
+    lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
+    lunesPasado.setHours(0,0,0,0);
 
-        // --- LÓGICA DE HORAS ---
-        const ahora = new Date();
-        
-        // 1. TOTAL SEMANA ANTERIOR
-        const diaSemanaActual = ahora.getDay();
-        const diffALunesPasado = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1) + 7;
-        const lunesPasado = new Date(ahora);
-        lunesPasado.setDate(ahora.getDate() - diffALunesPasado);
-        lunesPasado.setHours(0,0,0,0);
+    const domingoPasado = new Date(lunesPasado);
+    domingoPasado.setDate(lunesPasado.getDate() + 6);
+    domingoPasado.setHours(23,59,59,999);
 
-        const domingoPasado = new Date(lunesPasado);
-        domingoPasado.setDate(lunesPasado.getDate() + 6);
-        domingoPasado.setHours(23,59,59,999);
-
-        let totalHorasSemanaAnterior = 0;
-        cacheViajes.forEach(reg => {
-            const fechaReg = new Date(reg.f);
-            if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
-                totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-            }
-        });
-
-        // 2. PROMEDIO 5 DÍAS ANTERIORES
-        let sumaHoras5Dias = 0;
-        for (let i = 1; i <= 5; i++) {
-            const fechaBusqueda = new Date(ahora);
-            fechaBusqueda.setDate(ahora.getDate() - i);
-            const fechaBusquedaStr = fechaBusqueda.toISOString().split('T')[0];
-
-            const registroDia = cacheViajes.find(reg => {
-                const fReg = new Date(reg.f);
-                return fReg.toISOString().split('T')[0] === fechaBusquedaStr;
-            });
-
-            if (registroDia) {
-                sumaHoras5Dias += (Number(registroDia.hm) || 0) + (Number(registroDia.ht) || 0);
-            }
+    let totalHorasSemanaAnterior = 0;
+    cacheViajes.forEach(reg => {
+        const fechaReg = new Date(reg.f);
+        if (fechaReg >= lunesPasado && fechaReg <= domingoPasado) {
+            totalHorasSemanaAnterior += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
         }
-        const prom5 = (sumaHoras5Dias / 5).toFixed(1);
+    });
 
-        // Actualizamos Interfaz de Horas
-        if(document.getElementById('s-total-sem')) document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
-        if(document.getElementById('s-prom-5')) document.getElementById('s-prom-5').innerText = "Prom. 5 días ant: " + prom5 + "h";
+    // 2. PROMEDIO 5 DÍAS CALENDARIO ANTERIORES (Estricto)
+    let sumaHoras5Dias = 0;
+    for (let i = 1; i <= 5; i++) {
+        // Calculamos la fecha de i días atrás
+        const fechaBusqueda = new Date(ahora);
+        fechaBusqueda.setDate(ahora.getDate() - i);
+        const fechaBusquedaStr = fechaBusqueda.toISOString().split('T')[0]; // Formato YYYY-MM-DD
 
-        // --- ESTADÍSTICAS PRINCIPALES ---
-        // Usamos (d.stats || {}) para que si no hay stats, no de error
-        const st = d.stats || {};
-        document.getElementById('s-net').innerText = "$" + (st.netoMasReserva || 0).toLocaleString();
-        document.getElementById('s-bru').innerText = "$" + (st.bru || 0).toLocaleString();
-        document.getElementById('s-ben').innerText = "$" + (st.ben || 0).toLocaleString();
-        document.getElementById('s-tag').innerText = "$" + (st.tag || 0).toLocaleString();
-        document.getElementById('s-res').innerText = "$" + (st.res || 0).toLocaleString();
+        // Buscamos en el cache si hay un registro que coincida con ese día
+        const registroDia = cacheViajes.find(reg => {
+            const fReg = new Date(reg.f);
+            return fReg.toISOString().split('T')[0] === fechaBusquedaStr;
+        });
 
-        // --- GASTOS ---
-        const stG = d.statsGastos || { total: 0, porCategoria: {} };
-        document.getElementById('g-total').innerText = "$" + (stG.total || 0).toLocaleString();
-
-        let htmlGastos = "";
-        const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
-        
-        for (let cat in stG.porCategoria) {
-            let ico = iconos[cat] || "📦";
-            htmlGastos += `
-                <div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
-                    <span>${ico} ${cat}</span>
-                    <b>$${stG.porCategoria[cat].toLocaleString()}</b>
-                </div>`;
+        if (registroDia) {
+            sumaHoras5Dias += (Number(registroDia.hm) || 0) + (Number(registroDia.ht) || 0);
         }
-        document.getElementById('gastos-detalles-list').innerHTML = htmlGastos || "<small>Sin gastos este mes</small>";
-
-        // --- TABLAS ---
-        // Tabla Viajes
-        document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => `
-            <tr>
-                <td>${String(r.f).substring(0,10)}</td>
-                <td>$${(r.bru || 0).toLocaleString()}</td>
-                <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
-                <td>
-                    <button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button>
-                    <button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button>
-                </td>
-            </tr>`).join('');
-
-        // Tabla Gastos
-        const gastosRaiz = d.gastos || [];
-        document.querySelector('#tableGastos tbody').innerHTML = gastosRaiz.map(g => `
-            <tr>
-                <td style="text-align:left">
-                    <b>${g.cat}</b><br>
-                    <small>${g.desc || ''}</small><br>
-                    <small style="color:#999">${g.fecha || ''}</small>
-                </td>
-                <td>
-                    $${(g.monto || 0).toLocaleString()}<br>
-                    <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
-                </td>
-                <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-            </tr>`).join('');
-
-        // Renderizar Gráficos
-        renderCharts(d);
-
-    } catch (error) {
-        console.error("Error en loadData:", error);
+        // Si no hay registro, suma 0 (por eso es un promedio estricto de 5 días)
     }
+    const prom5 = (sumaHoras5Dias / 5).toFixed(1);
+
+    // Actualizamos los textos en la interfaz
+    document.getElementById('s-total-sem').innerText = totalHorasSemanaAnterior + "h";
+    document.getElementById('s-prom-5').innerText = "Prom. 5 días ant: " + prom5 + "h";
+
+    // --- RESTO DE ESTADÍSTICAS Y TABLAS ---
+    document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
+    document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
+    document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
+    document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
+    document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
+    document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
+
+    let htmlGastos = "";
+    const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
+    for (let cat in d.statsGastos.porCategoria) {
+        let ico = iconos[cat] || "📦";
+        htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
+            <span style="color:var(--text)">${ico} ${cat}</span>
+            <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
+        </div>`;
+    }
+    document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
+
+    document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
+        <td>${String(r.f).substring(0,10)}</td>
+        <td>$${(r.bru || 0).toLocaleString()}</td>
+        <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
+        <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+    </tr>`).join('');
+
+    document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
+        <td style="text-align:left">
+            <b>${g.cat}</b><br>
+            <small>${g.desc || ''}</small><br>
+            <small style="color:#999">${g.fecha}</small>
+        </td>
+        <td>
+            $${(g.monto || 0).toLocaleString()}<br>
+            <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
+        </td>
+        <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+    </tr>`).join('');
+    
+    renderCharts(d);
 }
 
-       function renderCharts(d) {
-    const isDark = document.body.classList.contains('dark-mode');
-    const displayColor = isDark ? '#ffffff' : '#666'; 
-    const gridColor = isDark ? '#333' : '#eee';
-
-    // Gráfico de Líneas (Viajes)
-    if(charts.line) charts.line.destroy();
-    if(document.getElementById('chartLine')) {
-        charts.line = new Chart(document.getElementById('chartLine'), { 
-            type: 'line', 
-            data: { 
-                labels: d.stats.hist.map(h => h.d), 
-                datasets: [
-                    { label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, 
-                    { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }
-                ] 
-            }, 
-            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: displayColor } } }, scales: { x: { ticks: { color: displayColor } }, y: { ticks: { color: displayColor }, grid: { color: gridColor } } } } 
-        });
-    }
-
-    // Gráfico de Gastos (Doughnut)
-    if(d.statsGastos && d.statsGastos.porCategoria) {
-        if(charts.gastos) charts.gastos.destroy();
-        charts.gastos = new Chart(document.getElementById('chartGastos'), { 
-            type: 'doughnut', 
-            data: { 
-                labels: Object.keys(d.statsGastos.porCategoria), 
-                datasets: [{ 
-                    data: Object.values(d.statsGastos.porCategoria), 
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] 
-                }] 
-            }, 
-            options: { 
-                maintainAspectRatio: false, 
-                responsive: true,
-                plugins: { legend: { labels: { color: displayColor, font: { size: 10 } }, position: 'bottom' } }
-            } 
-        });
-    }
-}
+        function renderCharts(d) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const tickColor = isDark ? '#f1f1f1' : '#666';
+            const gridColor = isDark ? '#333' : '#eee';
+            if(charts.app) charts.app.destroy();
+            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App', color: tickColor } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
+            if(charts.line) charts.line.destroy();
+            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tickColor } } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
+            if(charts.gastos) charts.gastos.destroy();
+            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { labels: { color: tickColor }, position: 'bottom' } } } });
+        }
 
         async function guardarGasto() {
             const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
