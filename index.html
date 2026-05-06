@@ -209,8 +209,9 @@ body.dark-mode #s-prom-5 {
 
         <div id="view-pan-gastos" style="display:none">
             <div class="card main-stat stat-gasto"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
-            <div class="card"><canvas id="chartGastos"></canvas></div>
             <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
+            <div class="card"><canvas id="chartGastos"></canvas></div>
+            
         </div>
     </div>
 
@@ -480,8 +481,29 @@ body.dark-mode #s-prom-5 {
             if(charts.line) charts.line.destroy();
             charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tickColor } } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
             if(charts.gastos) charts.gastos.destroy();
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { labels: { color: tickColor }, position: 'bottom' } } } });
-        }
+            if(charts.gastos) charts.gastos.destroy();
+charts.gastos = new Chart(document.getElementById('chartGastos'), { 
+    type: 'doughnut', 
+    data: { 
+        labels: Object.keys(d.statsGastos.porCategoria), 
+        datasets: [{ 
+            data: Object.values(d.statsGastos.porCategoria), 
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] 
+        }] 
+    }, 
+    options: { 
+        maintainAspectRatio: false, // <-- IMPORTANTE
+        responsive: true,
+        plugins: { 
+            legend: { 
+                labels: { color: textColor, font: { size: 10 } }, 
+                position: 'bottom' 
+            } 
+        },
+        // Esto reduce el tamaño del círculo dentro del cuadro
+        layout: { padding: 10 } 
+    } 
+});        }
 
         async function guardarGasto() {
             const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
