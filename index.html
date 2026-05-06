@@ -208,12 +208,19 @@ body.dark-mode #s-prom-5 {
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat stat-gasto"><small>TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
-            <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
-            <div class="card"><canvas id="chartGastos"></canvas></div>
-            
+    <div class="card main-stat stat-gasto">
+        <small>TOTAL GASTADO DIARIO</small><br>
+        <strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong>
+    </div>
+
+    <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
+
+    <div class="card" style="max-width: 350px; margin: 10px auto;">
+        <div style="height: 250px; position: relative;">
+            <canvas id="chartGastos"></canvas>
         </div>
     </div>
+</div>
 
     <div id="noteModal" class="modal">
         <div class="modal-content">
