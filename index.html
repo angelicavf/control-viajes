@@ -69,15 +69,30 @@ body.dark-mode .nav-btn {
         
         .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
 
-        /* --- PEGA AQUÍ LO NUEVO --- */
-        .stat-neto { background: #e8f5e9 !important; border-left: 5px solid #a5d6a7; }
-        .stat-bruto { background: #e3f2fd !important; border-left: 5px solid #90caf9; }
-        .stat-gasto { background: #fff3e0 !important; border-left: 5px solid #ffcc80; }
+       /* --- ESTILOS SUAVIZADOS MEJORADOS --- */
+.stat-neto { background: #e8f5e9 !important; border-left: 5px solid #a5d6a7; }
+.stat-bruto { background: #e3f2fd !important; border-left: 5px solid #90caf9; }
+.stat-gasto { background: #fff3e0 !important; border-left: 5px solid #ffcc80; }
 
-        body.dark-mode .stat-neto { background: #1b2e1c !important; border-left: 5px solid #2e7d32; }
-        body.dark-mode .stat-bruto { background: #1a2733 !important; border-left: 5px solid #1565c0; }
-        body.dark-mode .stat-gasto { background: #2d241a !important; border-left: 5px solid #e67e22; }
-        /* --- AQUÍ TERMINA LO NUEVO --- */
+/* Tonos suaves para Modo Oscuro (menos brillantes) */
+body.dark-mode .stat-neto { 
+    background: #142a16 !important; /* Verde bosque profundo muy suave */
+    border-left: 5px solid #2e7d32; 
+}
+body.dark-mode .stat-bruto { 
+    background: #14212b !important; /* Azul medianoche suave */
+    border-left: 5px solid #1565c0; 
+}
+body.dark-mode .stat-gasto { 
+    background: #2a1f14 !important; /* Marrón/Naranja quemado suave */
+    border-left: 5px solid #e67e22; 
+}
+
+/* Forzar que los textos dentro de estas tarjetas sean blancos en modo oscuro */
+body.dark-mode .main-stat small, 
+body.dark-mode .main-stat strong {
+    color: #e0e0e0 !important;
+}
         
     </style>
 </head>
@@ -188,8 +203,14 @@ body.dark-mode .nav-btn {
 
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-               <div class="card main-stat" style="background:#e8f5e9;"><small style="color:#222">NETO + RESERVA</small><br><strong id="s-net" style="font-size:1.4rem; color:#2e7d32">$0</strong></div>
-               <div class="card main-stat" style="background:#e3f2fd;"><small style="color:#222">BRUTO TOTAL</small><br><strong id="s-bru" style="font-size:1.4rem; color:#1565c0">$0</strong></div>
+               <div class="card main-stat stat-neto">
+    <small>NETO + RESERVA</small><br>
+    <strong id="s-net" style="font-size:1.4rem;">$0</strong>
+</div>
+<div class="card main-stat stat-bruto">
+    <small>BRUTO TOTAL</small><br>
+    <strong id="s-bru" style="font-size:1.4rem;">$0</strong>
+</div>
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#673ab7; font-weight:bold">$0</span></div>
@@ -204,7 +225,10 @@ body.dark-mode .nav-btn {
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat" style="background:#fff3e0;"><small style="color:#222">TOTAL GASTADO DIARIO</small><br><strong id="g-total" style="font-size:1.6rem; color:var(--warn)">$0</strong></div>
+           <div class="card main-stat stat-gasto">
+    <small>TOTAL GASTADO DIARIO</small><br>
+    <strong id="g-total" style="font-size:1.6rem;">$0</strong>
+</div>
              <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
            
