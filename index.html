@@ -80,8 +80,7 @@ body.dark-mode #s-prom-5 {
         body.dark-mode .stat-gasto { background: #2d241a !important; border-left: 5px solid #e67e22; }
         /* --- AQUÍ TERMINA LO NUEVO --- */
 
-    </style>
-</head>
+ 
         
     </style>
 </head>
@@ -479,63 +478,46 @@ body.dark-mode #s-prom-5 {
     renderCharts(d);
 }
 
-        function renderCharts(d) {
+       function renderCharts(d) {
     const isDark = document.body.classList.contains('dark-mode');
-    const displayColor = isDark ? '#ffffff' : '#666'; // Corregido nombre de variable
+    const displayColor = isDark ? '#ffffff' : '#666'; 
     const gridColor = isDark ? '#333' : '#eee';
 
-    // Gráfico de Barras
-    if(charts.app) charts.app.destroy();
-    charts.app = new Chart(document.getElementById('chartApp'), { 
-        type: 'bar', 
-        data: { 
-            labels: ['Ind','Didi','Cab'], 
-            datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] 
-        }, 
-        options: { 
-            plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App', color: displayColor } }, 
-            scales: { x: { ticks: { color: displayColor } }, y: { ticks: { color: displayColor }, grid: { color: gridColor } } } 
-        } 
-    });
-
-    // Gráfico de Líneas
+    // Gráfico de Líneas (Viajes)
     if(charts.line) charts.line.destroy();
-    charts.line = new Chart(document.getElementById('chartLine'), { 
-        type: 'line', 
-        data: { 
-            labels: d.stats.hist.map(h => h.d), 
-            datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] 
-        }, 
-        options: { 
-            maintainAspectRatio: false, 
-            plugins: { legend: { labels: { color: displayColor } } }, 
-            scales: { x: { ticks: { color: displayColor } }, y: { ticks: { color: displayColor }, grid: { color: gridColor } } } 
-        } 
-    });
+    if(document.getElementById('chartLine')) {
+        charts.line = new Chart(document.getElementById('chartLine'), { 
+            type: 'line', 
+            data: { 
+                labels: d.stats.hist.map(h => h.d), 
+                datasets: [
+                    { label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, 
+                    { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }
+                ] 
+            }, 
+            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: displayColor } } }, scales: { x: { ticks: { color: displayColor } }, y: { ticks: { color: displayColor }, grid: { color: gridColor } } } } 
+        });
+    }
 
     // Gráfico de Gastos (Doughnut)
-    if(charts.gastos) charts.gastos.destroy();
-    charts.gastos = new Chart(document.getElementById('chartGastos'), { 
-        type: 'doughnut', 
-        data: { 
-            labels: Object.keys(d.statsGastos.porCategoria), 
-            datasets: [{ 
-                data: Object.values(d.statsGastos.porCategoria), 
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] 
-            }] 
-        }, 
-        options: { 
-            maintainAspectRatio: false, 
-            responsive: true,
-            plugins: { 
-                legend: { 
-                    labels: { color: displayColor, font: { size: 10 } }, 
-                    position: 'bottom' 
-                } 
-            },
-            layout: { padding: 10 } 
-        } 
-    });
+    if(d.statsGastos && d.statsGastos.porCategoria) {
+        if(charts.gastos) charts.gastos.destroy();
+        charts.gastos = new Chart(document.getElementById('chartGastos'), { 
+            type: 'doughnut', 
+            data: { 
+                labels: Object.keys(d.statsGastos.porCategoria), 
+                datasets: [{ 
+                    data: Object.values(d.statsGastos.porCategoria), 
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] 
+                }] 
+            }, 
+            options: { 
+                maintainAspectRatio: false, 
+                responsive: true,
+                plugins: { legend: { labels: { color: displayColor, font: { size: 10 } }, position: 'bottom' } }
+            } 
+        });
+    }
 }
 
         async function guardarGasto() {
