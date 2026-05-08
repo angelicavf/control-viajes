@@ -432,14 +432,14 @@ body.dark-mode .main-stat strong {
     // --- ACTUALIZACIÓN DE LA INTERFAZ ---
     // Cambiamos el título de la tarjeta para que sea claro
     if(document.getElementById('label-sem')) {
-        document.getElementById('label-sem').innerText = "HORAS SEMANA";
+        document.getElementById('label-sem').innerText = "HORAS AC. SEMANA";
     }
     
     // Mostramos el total de la semana (donde antes iba la semana anterior)
     document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
     
     // Mostramos el total del mes (donde antes iba el promedio)
-    document.getElementById('s-prom-5').innerText = "Acumulado Mes: " + acumuladoMesActual + "h";
+    document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesActual + "h";
 
     // --- RESTO DE ESTADÍSTICAS Y TABLAS ---
     document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
