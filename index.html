@@ -407,39 +407,43 @@ body.dark-mode .main-stat strong {
     // Aseguramos que d.records exista para evitar errores
     cacheViajes = d.records || [];
 
-    // --- LÓGICA DE HORAS (CORREGIDA) ---
-    const ahora = new Date();
+    // --- LÓGICA DE HORAS CORREGIDA ---
+const filtroVal = document.getElementById('filtroMes').value; // Ej: "2026-05"
+const [anioSel, mesSel] = filtroVal.split('-').map(Number);
+
+const ahora = new Date();
+const diaSemActual = ahora.getDay(); 
+const diff = (diaSemActual === 0 ? 6 : diaSemActual - 1); 
+const lunesEstaSemana = new Date(ahora);
+lunesEstaSemana.setDate(ahora.getDate() - diff);
+lunesEstaSemana.setHours(0, 0, 0, 0);
+
+let acumuladoSemanaActual = 0;
+let acumuladoMesSeleccionado = 0;
+
+cacheViajes.forEach(reg => {
+    const horasDia = (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
     
-    // Calculamos el lunes de la semana actual para la comparación
-    const diaSemActual = ahora.getDay(); 
-    const diff = (diaSemActual === 0 ? 6 : diaSemActual - 1); 
-    const lunesEstaSemana = new Date(ahora);
-    lunesEstaSemana.setDate(ahora.getDate() - diff);
-    lunesEstaSemana.setHours(0, 0, 0, 0);
+    // Obtenemos año y mes del registro actual
+    const fechaLimpia = reg.f.split('T')[0].replace(/-/g, '/');
+    const fechaReg = new Date(fechaLimpia);
+    const anioReg = fechaReg.getFullYear();
+    const mesReg = fechaReg.getMonth() + 1; // getMonth() es 0-11
 
-    let acumuladoSemanaActual = 0;
-    let acumuladoMesSeleccionado = 0;
-
-    cacheViajes.forEach(reg => {
-        const horasDia = (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-        
-        // Suma total del mes (Sin condiciones, porque d.records ya viene filtrado por la API)
+    // VALIDACIÓN: Solo suma al acumulado del mes si el registro coincide con el filtro
+    if (anioReg === anioSel && mesReg === mesSel) {
         acumuladoMesSeleccionado += horasDia;
+    }
 
-        // Suma para la semana actual (Solo si la fecha coincide con la semana real de hoy)
-        // Usamos un reemplazo para evitar errores de zona horaria (YYYY-MM-DD)
-        const fechaLimpia = reg.f.split('T')[0].replace(/-/g, '\/'); 
-        const fechaReg = new Date(fechaLimpia);
-        
-        if (fechaReg >= lunesEstaSemana && fechaReg <= ahora) {
-            acumuladoSemanaActual += horasDia;
-        }
-    });
+    // VALIDACIÓN: Solo suma a la semana si el registro es de esta semana actual
+    if (fechaReg >= lunesEstaSemana && fechaReg <= ahora) {
+        acumuladoSemanaActual += horasDia;
+    }
+});
 
-    // --- ACTUALIZACIÓN DE INTERFAZ DE HORAS ---
-    if (document.getElementById('label-sem')) document.getElementById('label-sem').innerText = "HORAS AC. SEMANA";
-    document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
-    document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesSeleccionado + "h";
+// Actualización de la interfaz
+document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
+document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesSeleccionado + "h";
 
     // --- RESTO DE ESTADÍSTICAS ---
     // Usamos || 0 para que si no hay datos de un mes, la app no se caiga
