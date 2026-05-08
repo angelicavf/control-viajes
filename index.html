@@ -279,7 +279,7 @@ body.dark-mode .main-stat strong {
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-            if(charts.line) loadData(); 
+            if(charts.line) ta(); 
         }
 
         function toggleVoz() {
@@ -294,7 +294,7 @@ body.dark-mode .main-stat strong {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).style.display = 'block';
             event.currentTarget.classList.add('active');
-            loadData();
+            ta();
         }
 
         function subTab(parent, type) {
@@ -303,7 +303,7 @@ body.dark-mode .main-stat strong {
             document.querySelectorAll(`#${parent} .sub-nav button`).forEach(b => b.classList.remove('active'));
             document.getElementById(`sub-${parent}-${type}`).classList.add('active');
             if(type === 'gastos' && parent === 'reg') loadFijos();
-            if(parent === 'pan' || parent === 'his') setTimeout(loadData, 100);
+            if(parent === 'pan' || parent === 'his') setTimeout(ta, 100);
         }
 
         function openEdit(row) {
@@ -326,7 +326,7 @@ body.dark-mode .main-stat strong {
         async function saveEdit() {
             const p = { ind: +document.getElementById('e-ind').value, did: +document.getElementById('e-did').value, cab: +document.getElementById('e-cab').value, ben: +document.getElementById('e-ben').value, tag: +document.getElementById('e-tag').value, res: +document.getElementById('e-res').value, com: +document.getElementById('e-com').value, hm: +document.getElementById('e-hm').value, ht: +document.getElementById('e-ht').value };
             await fetch(API, { method: 'POST', body: JSON.stringify({action:"update", row: editingRow, payload: p}) });
-            closeModal(); loadData();
+            closeModal(); ta();
         }
         function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 
@@ -395,94 +395,89 @@ body.dark-mode .main-stat strong {
             document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = ""; loadFijos();
         }
 
-       async function loadData() {
+      async function loadData() {
     const fValue = document.getElementById('filtroMes').value;
-    if(!fValue) return;
+    if (!fValue) return;
     const f = fValue.split('-');
-    const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"read", mes: f[1], anio: f[0]}) });
+    
+    // 1. Llamada a la API
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: "read", mes: f[1], anio: f[0] }) });
     const d = await r.json();
-    cacheViajes = d.records;
-
-// --- LÓGICA DE HORAS (DINÁMICA SEGÚN MES SELECCIONADO) ---
-    const filtroVal = document.getElementById('filtroMes').value; // Ej: "2024-05"
-    const [anioSel, mesSel] = filtroVal.split('-').map(Number);
     
+    // Aseguramos que d.records exista para evitar errores
+    cacheViajes = d.records || [];
+
+    // --- LÓGICA DE HORAS (CORREGIDA) ---
     const ahora = new Date();
-    const hoyStr = ahora.toISOString().split('T')[0];
     
-    // 1. ACUMULADO SEMANA ACTUAL (Solo si estamos en el mes/año actual)
-    let acumuladoSemanaActual = 0;
-    
-    // Calculamos el lunes de esta semana real
-    const diaSemanaActual = ahora.getDay(); 
-    const diffALunes = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1); 
+    // Calculamos el lunes de la semana actual para la comparación
+    const diaSemActual = ahora.getDay(); 
+    const diff = (diaSemActual === 0 ? 6 : diaSemActual - 1); 
     const lunesEstaSemana = new Date(ahora);
-    lunesEstaSemana.setDate(ahora.getDate() - diffALunes);
-    lunesEstaSemana.setHours(0,0,0,0);
+    lunesEstaSemana.setDate(ahora.getDate() - diff);
+    lunesEstaSemana.setHours(0, 0, 0, 0);
 
-    // 2. ACUMULADO TOTAL DEL MES SELECCIONADO
+    let acumuladoSemanaActual = 0;
     let acumuladoMesSeleccionado = 0;
 
     cacheViajes.forEach(reg => {
         const horasDia = (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
         
-        // Suma para el total del mes (todo lo que está en cache ya es del mes filtrado)
+        // Suma total del mes (Sin condiciones, porque d.records ya viene filtrado por la API)
         acumuladoMesSeleccionado += horasDia;
 
-        // Suma para la semana actual (solo si el registro es de esta semana)
-        const fechaReg = new Date(reg.f);
+        // Suma para la semana actual (Solo si la fecha coincide con la semana real de hoy)
+        // Usamos un reemplazo para evitar errores de zona horaria (YYYY-MM-DD)
+        const fechaLimpia = reg.f.split('T')[0].replace(/-/g, '\/'); 
+        const fechaReg = new Date(fechaLimpia);
+        
         if (fechaReg >= lunesEstaSemana && fechaReg <= ahora) {
             acumuladoSemanaActual += horasDia;
         }
     });
 
-    // --- ACTUALIZACIÓN DE LA INTERFAZ ---
-    if(document.getElementById('label-sem')) {
-        document.getElementById('label-sem').innerText = "HORAS AC. SEMANA";
-    }
-    
-    // Mostramos la semana (será 0 si estás viendo un mes pasado)
+    // --- ACTUALIZACIÓN DE INTERFAZ DE HORAS ---
+    if (document.getElementById('label-sem')) document.getElementById('label-sem').innerText = "HORAS AC. SEMANA";
     document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
+    document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesSeleccionado + "h";
+
+    // --- RESTO DE ESTADÍSTICAS ---
+    // Usamos || 0 para que si no hay datos de un mes, la app no se caiga
+    const stats = d.stats || {};
+    document.getElementById('s-net').innerText = "$" + (stats.netoMasReserva || 0).toLocaleString();
+    document.getElementById('s-bru').innerText = "$" + (stats.bru || 0).toLocaleString();
+    document.getElementById('s-ben').innerText = "$" + (stats.ben || 0).toLocaleString();
+    document.getElementById('s-tag').innerText = "$" + (stats.tag || 0).toLocaleString();
+    document.getElementById('s-res').innerText = "$" + (stats.res || 0).toLocaleString();
     
-    // Mostramos el total del mes seleccionado
-    document.getElementById('s-prom-5').innerText = "Horas acumulada Mes:" + acumuladoMesSeleccionado + "h";
+    const statsG = d.statsGastos || { total: 0, porCategoria: {} };
+    document.getElementById('g-total').innerText = "$" + (statsG.total || 0).toLocaleString();
 
-    // --- RESTO DE ESTADÍSTICAS Y TABLAS ---
-    document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
-    document.getElementById('s-bru').innerText = "$" + (d.stats.bru || 0).toLocaleString();
-    document.getElementById('s-ben').innerText = "$" + (d.stats.ben || 0).toLocaleString();
-    document.getElementById('s-tag').innerText = "$" + (d.stats.tag || 0).toLocaleString();
-    document.getElementById('s-res').innerText = "$" + (d.stats.res || 0).toLocaleString();
-    document.getElementById('g-total').innerText = "$" + (d.statsGastos.total || 0).toLocaleString();
-
+    // --- LISTA DE GASTOS ---
     let htmlGastos = "";
-    const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
-    for (let cat in d.statsGastos.porCategoria) {
+    const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍Ç", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
+    
+    for (let cat in statsG.porCategoria) {
         let ico = iconos[cat] || "📦";
         htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
             <span style="color:var(--text)">${ico} ${cat}</span>
-            <b style="color:var(--text)">$${d.statsGastos.porCategoria[cat].toLocaleString()}</b>
+            <b style="color:var(--text)">$${statsG.porCategoria[cat].toLocaleString()}</b>
         </div>`;
     }
-    document.getElementById('gastos-detalles-list').innerHTML = htmlGastos;
+    document.getElementById('gastos-detalles-list').innerHTML = htmlGastos || "<small>No hay gastos registrados</small>";
 
-    document.querySelector('#tableHis tbody').innerHTML = d.records.map(r => `<tr>
+    // --- TABLAS HISTORIAL ---
+    document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => `<tr>
         <td>${String(r.f).substring(0,10)}</td>
         <td>$${(r.bru || 0).toLocaleString()}</td>
         <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
         <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
     </tr>`).join('');
 
-    document.querySelector('#tableGastos tbody').innerHTML = d.gastos.map(g => `<tr>
-        <td style="text-align:left">
-            <b>${g.cat}</b><br>
-            <small>${g.desc || ''}</small><br>
-            <small style="color:#999">${g.fecha}</small>
-        </td>
-        <td>
-            $${(g.monto || 0).toLocaleString()}<br>
-            <small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small>
-        </td>
+    const listaGastos = d.gastos || [];
+    document.querySelector('#tableGastos tbody').innerHTML = listaGastos.map(g => `<tr>
+        <td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc || ''}</small><br><small style="color:#999">${g.fecha}</small></td>
+        <td>$${(g.monto || 0).toLocaleString()}<br><small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small></td>
         <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
     </tr>`).join('');
     
