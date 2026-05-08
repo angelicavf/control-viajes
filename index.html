@@ -403,43 +403,49 @@ body.dark-mode .main-stat strong {
     const d = await r.json();
     cacheViajes = d.records;
 
- // --- LÓGICA DE HORAS (NUEVA: SEMANA ACTUAL Y MES ACUMULADO) ---
-    const ahora = new Date();
+// --- LÓGICA DE HORAS (DINÁMICA SEGÚN MES SELECCIONADO) ---
+    const filtroVal = document.getElementById('filtroMes').value; // Ej: "2024-05"
+    const [anioSel, mesSel] = filtroVal.split('-').map(Number);
     
-    // 1. ACUMULADO SEMANA ACTUAL (Desde el lunes de esta semana hasta hoy)
+    const ahora = new Date();
+    const hoyStr = ahora.toISOString().split('T')[0];
+    
+    // 1. ACUMULADO SEMANA ACTUAL (Solo si estamos en el mes/año actual)
+    let acumuladoSemanaActual = 0;
+    
+    // Calculamos el lunes de esta semana real
     const diaSemanaActual = ahora.getDay(); 
-    // Ajuste para que el lunes sea 0, martes 1... domingo 6
     const diffALunes = (diaSemanaActual === 0 ? 6 : diaSemanaActual - 1); 
     const lunesEstaSemana = new Date(ahora);
     lunesEstaSemana.setDate(ahora.getDate() - diffALunes);
     lunesEstaSemana.setHours(0,0,0,0);
 
-    let acumuladoSemanaActual = 0;
+    // 2. ACUMULADO TOTAL DEL MES SELECCIONADO
+    let acumuladoMesSeleccionado = 0;
+
     cacheViajes.forEach(reg => {
+        const horasDia = (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
+        
+        // Suma para el total del mes (todo lo que está en cache ya es del mes filtrado)
+        acumuladoMesSeleccionado += horasDia;
+
+        // Suma para la semana actual (solo si el registro es de esta semana)
         const fechaReg = new Date(reg.f);
-        // Sumamos solo si la fecha del registro cae entre el lunes pasado y hoy
         if (fechaReg >= lunesEstaSemana && fechaReg <= ahora) {
-            acumuladoSemanaActual += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
+            acumuladoSemanaActual += horasDia;
         }
     });
 
-    // 2. ACUMULADO TOTAL DEL MES (Suma de todo lo cargado en el filtro actual)
-    let acumuladoMesActual = 0;
-    cacheViajes.forEach(reg => {
-        acumuladoMesActual += (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-    });
-
     // --- ACTUALIZACIÓN DE LA INTERFAZ ---
-    // Cambiamos el título de la tarjeta para que sea claro
     if(document.getElementById('label-sem')) {
         document.getElementById('label-sem').innerText = "HORAS AC. SEMANA";
     }
     
-    // Mostramos el total de la semana (donde antes iba la semana anterior)
+    // Mostramos la semana (será 0 si estás viendo un mes pasado)
     document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
     
-    // Mostramos el total del mes (donde antes iba el promedio)
-    document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesActual + "h";
+    // Mostramos el total del mes seleccionado
+    document.getElementById('s-prom-5').innerText = "Horas acumulada Mes:" + acumuladoMesSeleccionado + "h";
 
     // --- RESTO DE ESTADÍSTICAS Y TABLAS ---
     document.getElementById('s-net').innerText = "$" + (d.stats.netoMasReserva || 0).toLocaleString();
