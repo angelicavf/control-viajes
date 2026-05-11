@@ -127,11 +127,9 @@ body.dark-mode .main-stat strong {
 
             <div class="card">
                 <h4 style="margin:0">Ingreso Manual Viaje</h4>
-                <label>Fecha del Viaje</label>
-        <input type="date" id="m-fecha">
-    </div>
-                
+            
                 <div class="grid">
+                    <label>Fecha del Viaje</label> <input type="date" id="m-fecha">
                     <div><label>Indriver</label><input type="number" id="m-ind"></div>
                     <div><label>DiDi</label><input type="number" id="m-did"></div>
                     <div><label>Cabify</label><input type="number" id="m-cab"></div>
@@ -522,12 +520,45 @@ document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumul
         
         async function enviarVoz() { const m = document.getElementById('textVoz').value; if(!m) return; await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) }); document.getElementById('textVoz').value = ""; loadData(); }
         async function enviarManual() {
-            const fechaSeleccionada = document.getElementById('m-fecha').value;
-            const p = { ind: +document.getElementById('m-ind').value, did: +document.getElementById('m-did').value, cab: +document.getElementById('m-cab').value, ben: +document.getElementById('m-ben').value, tag: +document.getElementById('m-tag').value, res: +document.getElementById('m-res').value, com: +document.getElementById('m-com').value, hm: +document.getElementById('m-hm').value, ht: +document.getElementById('m-ht').value };
-            await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", isManual:true, payload: p}) }); loadData();
-      document.getElementById('m-fecha').value = "";
+    const fechaSeleccionada = document.getElementById('m-fecha').value;
+    if (!fechaSeleccionada) return alert("Por favor, selecciona una fecha");
+
+    // Validación para evitar duplicados accidentales
+    const yaExiste = cacheViajes.some(reg => reg.f.split('T')[0] === fechaSeleccionada);
+    if (yaExiste) {
+        const confirmar = confirm("Ya existe un registro para esta fecha. ¿Deseas guardar uno nuevo de todos modos? (Esto sumará al acumulado del mes)");
+        if (!confirmar) return;
+    }
+
+    const p = { 
+        fecha: fechaSeleccionada, // Ahora se envía la fecha elegida
+        ind: +document.getElementById('m-ind').value, 
+        did: +document.getElementById('m-did').value, 
+        cab: +document.getElementById('m-cab').value, 
+        ben: +document.getElementById('m-ben').value, 
+        tag: +document.getElementById('m-tag').value, 
+        res: +document.getElementById('m-res').value, 
+        com: +document.getElementById('m-com').value, 
+        hm: +document.getElementById('m-hm').value, 
+        ht: +document.getElementById('m-ht').value 
+    };
+
+    // Enviamos los datos al servidor
+    await fetch(API, { 
+        method: 'POST', 
+        body: JSON.stringify({action: "create", isManual: true, payload: p}) 
+    });
+
+    // Limpiamos los campos para el próximo registro
+    const ids = ['m-ind', 'm-did', 'm-cab', 'm-ben', 'm-tag', 'm-res', 'm-com', 'm-hm', 'm-ht'];
+    ids.forEach(id => document.getElementById(id).value = "");
+    
+    // Devolvemos la fecha a la de hoy por defecto
+    document.getElementById('m-fecha').value = new Date().toISOString().split('T')[0];
+
+    // Recargamos el panel y el historial
     loadData();
-        }
+}
 
         window.onload = function() {
             if(localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); }
