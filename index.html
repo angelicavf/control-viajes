@@ -93,6 +93,9 @@ body.dark-mode .main-stat small,
 body.dark-mode .main-stat strong {
     color: #e0e0e0 !important;
 }
+.fila-pagada { background-color: #142a16 !important; }
+.fila-pagada td { border-bottom-color: #2e7d32 !important; }
+        
         
     </style>
 </head>
@@ -341,7 +344,7 @@ body.dark-mode .main-stat strong {
             if(isHidden) loadFijos();
         }
 
-        async function loadFijos() {
+   async function loadFijos() {
             const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
             const d = await r.json();
             cacheFijos = d.fijos;
@@ -350,7 +353,9 @@ body.dark-mode .main-stat strong {
             let totalG = 0, totalP = 0;
             document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
                 totalG += g.monto; const esP = pagadosLocal.includes(g.row); if(esP) totalP += g.monto;
-                return `<tr>
+                
+                // CAMBIO AQUÍ: Se añade la clase dinámica 'fila-pagada' al TR si esP es verdadero
+                return `<tr class="${esP ? 'fila-pagada' : ''}">
                     <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
                     <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
                     <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
