@@ -365,7 +365,15 @@ body.dark-mode .main-stat strong {
                     </td>
                 </tr>`;
             }).join('');
-            document.getElementById('f-totalizador').innerHTML = `<span style="color:var(--s)">$${totalP.toLocaleString()}</span> / <span style="color:#777; font-weight:normal">$${totalG.toLocaleString()}</span>`;
+            // Calculamos lo que falta por pagar
+            let pendiente = totalG - totalP;
+
+            // Actualizamos el diseño para incluir el monto Pendiente
+            document.getElementById('f-totalizador').innerHTML = `
+                <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
+                <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
+                <span style="color:#777; font-weight:normal">Total: $${totalG.toLocaleString()}</span>
+            `;
         }
 
         // --- FUNCIONES DE NOTAS ---
