@@ -368,12 +368,14 @@ body.dark-mode .main-stat strong {
             // Calculamos lo que falta por pagar
             let pendiente = totalG - totalP;
 
-            // Actualizamos el diseño para incluir el monto Pendiente
-            document.getElementById('f-totalizador').innerHTML = `
-                <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
-                <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
-                <span style="color:#3C25BA; font-weight:normal">Total:$${totalG.toLocaleString()}</span>&nbsp;|&nbsp; 
-            `;
+           // Actualizamos el diseño para incluir el monto Pendiente y lo alineamos a la derecha
+const totalizador = document.getElementById('f-totalizador');
+totalizador.style.textAlign = 'right'; // Fuerza la alineación a la derecha
+totalizador.innerHTML = `
+    <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
+    <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
+    <span style="color:#3C25BA; font-weight:normal">Total: $${totalG.toLocaleString()}</span>&nbsp;
+`;
         }
 
         // --- FUNCIONES DE NOTAS ---
