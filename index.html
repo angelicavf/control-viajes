@@ -345,39 +345,50 @@ body.dark-mode .main-stat strong {
             if(isHidden) loadFijos();
         }
 
-   async function loadFijos() {
-            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
-            const d = await r.json();
-            cacheFijos = d.fijos;
-            const mesActual = document.getElementById('filtroMes').value;
-            const pagadosLocal = JSON.parse(localStorage.getItem(`f_pagados_${mesActual}`) || '[]');
-            let totalG = 0, totalP = 0;
-            document.querySelector('#tableFijos tbody').innerHTML = d.fijos.map(g => {
-                totalG += g.monto; const esP = pagadosLocal.includes(g.row); if(esP) totalP += g.monto;
-                
-                // CAMBIO AQUÍ: Se añade la clase dinámica 'fila-pagada' al TR si esP es verdadero
-                return `<tr class="${esP ? 'fila-pagada' : ''}">
-                    <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
-                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
-                    <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
-                    <td>
-                        <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
-                        <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
-                    </td>
-                </tr>`;
-            }).join('');
-            // Calculamos lo que falta por pagar
-            let pendiente = totalG - totalP;
+  async function loadFijos() {
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
+    const d = await r.json();
+    cacheFijos = d.fijos || [];
 
-           // Actualizamos el diseño para incluir el monto Pendiente y lo alineamos a la derecha
-const totalizador = document.getElementById('f-totalizador');
-totalizador.style.textAlign = 'right'; // Fuerza la alineación a la derecha
-totalizador.innerHTML = `
-    <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
-    <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
-    <span style="color:#3C25BA; font-weight:bold">Total: $${totalG.toLocaleString()}</span>&nbsp;
-`;
-        }
+    // Obtenemos el mes seleccionado en el filtro del panel o mes actual
+    const mesActual = document.getElementById('filtroMes').value || new Date().toISOString().substring(0, 7);
+
+    // Obtenemos las filas pagadas traídas directamente desde la nube (Google Sheets)
+    const pagadosServidor = d.pagados || [];
+    const pagadosLocal = pagadosServidor
+        .filter(p => p.mes === mesActual)
+        .map(p => p.row);
+
+    let totalG = 0, totalP = 0;
+
+    document.querySelector('#tableFijos tbody').innerHTML = cacheFijos.map(g => {
+        totalG += g.monto; 
+        const esP = pagadosLocal.includes(g.row); 
+        if(esP) totalP += g.monto;
+        
+        return `<tr class="${esP ? 'fila-pagada' : ''}">
+            <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
+            <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
+            <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
+            <td>
+                <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
+                <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    // Calculamos lo que falta por pagar
+    let pendiente = totalG - totalP;
+
+    // Actualizamos el totalizador a la derecha
+    const totalizador = document.getElementById('f-totalizador');
+    totalizador.style.textAlign = 'right';
+    totalizador.innerHTML = `
+        <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
+        <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
+        <span style="color:#3C25BA; font-weight:bold">Total: $${totalG.toLocaleString()}</span>&nbsp;
+    `;
+}
 
         // --- FUNCIONES DE NOTAS ---
         function openNote(row) {
@@ -397,13 +408,21 @@ totalizador.innerHTML = `
 
         function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
 
-        function tachado(row) {
-            const mes = document.getElementById('filtroMes').value;
-            let p = JSON.parse(localStorage.getItem(`f_pagados_${mes}`) || '[]');
-            p.includes(row) ? p = p.filter(i => i !== row) : p.push(row);
-            localStorage.setItem(`f_pagados_${mes}`, JSON.stringify(p));
-            loadFijos();
-        }
+        async function tachado(row) {
+    const mes = document.getElementById('filtroMes').value || new Date().toISOString().substring(0, 7);
+    
+    // Enviamos la actualización a la nube en lugar de guardar localmente
+    await fetch(API, { 
+        method: 'POST', 
+        body: JSON.stringify({
+            action: "togglePagadoFijo", 
+            payload: { row: row, mes: mes }
+        }) 
+    });
+    
+    // Recargamos los gastos desde Google Sheets
+    loadFijos();
+}
 
         async function delFijo(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) }); loadFijos(); } }
         async function addFijo() {
