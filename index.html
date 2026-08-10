@@ -167,10 +167,13 @@
                 <button onclick="guardarGasto()" style="width:100%; padding:15px; background:var(--warn); color:white; border:none; border-radius:10px; font-weight:bold; margin-top:10px;">REGISTRAR GASTO</button>
 
                 <div style="margin-top: 20px; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
-                    <button onclick="toggleFijos()" style="width: 100%; padding: 15px; border: none; background: #eee; font-weight: bold; display: flex; justify-content: space-between; cursor: pointer; color: #555;">
-                        <span>📌 Guía de Gastos Fijos</span>
-                        <span id="f-arrow">▼</span>
-                    </button>
+                    <!-- REEMPLAZA LA CABECERA DE LA GUÍA DE GASTOS FIJOS POR ESTA: -->
+<div style="background: #eee; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px 12px 0 0;">
+    <button onclick="toggleFijos()" style="border: none; background: none; font-weight: bold; cursor: pointer; color: #555; padding: 0; font-size: 0.95rem;">
+        📌 Guía de Gastos Fijos <span id="f-arrow">▼</span>
+    </button>
+    <input type="month" id="f-filtroMes" onchange="loadFijos()" style="width: auto; padding: 5px 10px; margin: 0; font-size: 0.8rem;">
+</div>
                     <div id="f-content" style="display: none; padding: 10px; background: var(--card-bg);">
                         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                             <input type="text" id="f-nom" placeholder="Nombre">
@@ -331,47 +334,58 @@
             if(isHidden) loadFijos();
         }
 
-        async function loadFijos() {
-            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
-            const d = await r.json();
-            cacheFijos = d.fijos || [];
+        // --- CARGA DE FIJOS ---
+async function loadFijos() {
+    // 1. Asignar fecha por defecto al selector de mes de fijos si está vacío
+    let inputMesFijo = document.getElementById('f-filtroMes');
+    if (inputMesFijo && !inputMesFijo.value) {
+        const inputPanel = document.getElementById('filtroMes');
+        inputMesFijo.value = (inputPanel && inputPanel.value) ? inputPanel.value : new Date().toISOString().substring(0, 7);
+    }
 
-            const fEl = document.getElementById('filtroMes');
-            const mesActual = (fEl && fEl.value) ? fEl.value : new Date().toISOString().substring(0, 7);
+    const mesConsulta = inputMesFijo ? inputMesFijo.value : new Date().toISOString().substring(0, 7);
 
-            const pagadosServidor = d.pagados || [];
-            const pagadosLocal = pagadosServidor
-                .filter(p => String(p.mes) === String(mesActual))
-                .map(p => Number(p.row));
+    // 2. Consultar a la API
+    const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: "readFijos" }) });
+    const d = await r.json();
+    cacheFijos = d.fijos || [];
 
-            let totalG = 0, totalP = 0;
+    // 3. Filtrar registros pagados para el mes seleccionado
+    const pagadosServidor = d.pagados || [];
+    const pagadosLocal = pagadosServidor
+        .filter(p => String(p.mes).trim() === String(mesConsulta).trim())
+        .map(p => Number(p.row));
 
-            document.querySelector('#tableFijos tbody').innerHTML = cacheFijos.map(g => {
-                totalG += Number(g.monto) || 0; 
-                const esP = pagadosLocal.includes(Number(g.row)); 
-                if(esP) totalP += Number(g.monto) || 0;
-                
-                return `<tr id="fijo-row-${g.row}" class="${esP ? 'fila-pagada' : ''}">
-                    <td class="check-btn" style="cursor:pointer; font-size:1.2rem;" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
-                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
-                    <td class="${esP ? 'strike' : ''}">$${(Number(g.monto) || 0).toLocaleString()}</td>
-                    <td>
-                        <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
-                        <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
-                    </td>
-                </tr>`;
-            }).join('');
+    let totalG = 0, totalP = 0;
 
-            let pendiente = totalG - totalP;
+    document.querySelector('#tableFijos tbody').innerHTML = cacheFijos.map(g => {
+        totalG += Number(g.monto) || 0;
+        const esP = pagadosLocal.includes(Number(g.row));
+        if (esP) totalP += Number(g.monto) || 0;
 
-            const totalizador = document.getElementById('f-totalizador');
-            totalizador.style.textAlign = 'right';
-            totalizador.innerHTML = `
-                <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
-                <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
-                <span style="color:#3C25BA; font-weight:bold">Total: $${totalG.toLocaleString()}</span>&nbsp;
-            `;
-        }
+        return `<tr id="fijo-row-${g.row}" class="${esP ? 'fila-pagada' : ''}">
+            <td class="check-btn" style="cursor:pointer; font-size:1.2rem;" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
+            <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
+            <td class="${esP ? 'strike' : ''}">$${(Number(g.monto) || 0).toLocaleString()}</td>
+            <td>
+                <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
+                <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    // 4. Actualizar totalizador
+    let pendiente = totalG - totalP;
+    const totalizador = document.getElementById('f-totalizador');
+    if (totalizador) {
+        totalizador.style.textAlign = 'right';
+        totalizador.innerHTML = `
+            <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
+            <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
+            <span style="color:#3C25BA; font-weight:bold">Total: $${totalG.toLocaleString()}</span>&nbsp;
+        `;
+    }
+}
 
         function openNote(row) {
             const fijo = cacheFijos.find(f => f.row === row);
@@ -390,32 +404,36 @@
 
         function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
 
-        async function tachado(row) {
-            const tr = document.getElementById(`fijo-row-${row}`);
-            if(tr) {
-                const btn = tr.querySelector('.check-btn');
-                if(btn.innerText === '🔲') {
-                    btn.innerText = '✅';
-                    tr.classList.add('fila-pagada');
-                } else {
-                    btn.innerText = '🔲';
-                    tr.classList.remove('fila-pagada');
-                }
-            }
+       async function tachado(row) {
+    const inputMesFijo = document.getElementById('f-filtroMes');
+    const mes = inputMesFijo ? inputMesFijo.value : new Date().toISOString().substring(0, 7);
 
-            const fEl = document.getElementById('filtroMes');
-            const mes = (fEl && fEl.value) ? fEl.value : new Date().toISOString().substring(0, 7);
-            
-            await fetch(API, { 
-                method: 'POST', 
-                body: JSON.stringify({
-                    action: "togglePagadoFijo", 
-                    payload: { row: row, mes: mes }
-                }) 
-            });
-            
-            loadFijos();
-        }
+    // Cambio visual síncrono previo
+    const tr = document.getElementById(`fijo-row-${row}`);
+    if (tr) {
+        const btn = tr.querySelector('.check-btn');
+        const estaPagado = btn.innerText === '✅';
+        
+        // Alternar visualmente
+        btn.innerText = estaPagado ? '🔲' : '✅';
+        tr.classList.toggle('fila-pagada', !estaPagado);
+        
+        tr.querySelectorAll('td')[1].classList.toggle('strike', !estaPagado);
+        tr.querySelectorAll('td')[2].classList.toggle('strike', !estaPagado);
+    }
+
+    // Persistir en Google Sheets
+    await fetch(API, {
+        method: 'POST',
+        body: JSON.stringify({
+            action: "togglePagadoFijo",
+            payload: { row: row, mes: mes }
+        })
+    });
+
+    // Recargar desde servidor para asegurar sincronía final
+    loadFijos();
+}
 
         async function delFijo(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) }); loadFijos(); } }
         async function addFijo() {
