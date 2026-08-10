@@ -492,8 +492,14 @@ document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumul
     // CÓDIGO NUEVO:
 document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => {
     const totalHorasDia = (Number(r.hm) || 0) + (Number(r.ht) || 0);
+    // 1. Extraemos año, mes y día de la fecha ISO
+    const [anio, mes, dia] = String(r.f).substring(0, 10).split('-');
+    
+    // 2. Formateamos a DD-MM-YY (tomamos los últimos 2 dígitos del año)
+    const fechaFormateada = `${dia}-${mes}-${anio.slice(-2)}`;
+
     return `<tr>
-        <td>${String(r.f).substring(0,10)}</td>
+        <td>${fechaFormateada}</td>
         <td>$${(r.bru || 0).toLocaleString()}</td>
         <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
         <td style="color:var(--p); font-weight:bold;">${totalHorasDia}h</td>
