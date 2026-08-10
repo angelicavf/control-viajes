@@ -10,10 +10,10 @@
         
         /* ESTILOS MODO OSCURO */
         body.dark-mode { --bg: #121212; --text: #f1f1f1; --card-bg: #1e1e1e; --nav-bg: #1e1e1e; }
-       body.dark-mode .nav { 
-    background-color: #2d2d2d !important; /* Un gris más claro que el fondo negro */
-    border-bottom: 1px solid #444;
-}
+        body.dark-mode .nav { 
+            background-color: #2d2d2d !important; 
+            border-bottom: 1px solid #444;
+        }
         body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #2c2c2c; color: white; border-color: #444; }
         body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color: #333; color: #f1f1f1; }
         body.dark-mode .sub-nav { background: #2c2c2c; }
@@ -48,55 +48,44 @@
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; }
         .modal-content { background:var(--card-bg); margin:10% auto; padding:20px; width:85%; border-radius:15px; max-height: 85vh; overflow-y: auto; }
         
-        /* Botón de nota pequeño */
         .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
 
-        /* Esto aclara los textos de las etiquetas y promedios en modo oscuro */
-body.dark-mode .card small, 
-body.dark-mode .card label,
-body.dark-mode #s-prom-5 { 
-    color: #ffffff !important; 
-    opacity: 0.9;
-}
+        body.dark-mode .card small, 
+        body.dark-mode .card label,
+        body.dark-mode #s-prom-5 { 
+            color: #ffffff !important; 
+            opacity: 0.9;
+        }
 
-/* Aclarar los botones del menú superior que no están activos */
-body.dark-mode .nav-btn {
-    color: #e0e0e0 !important;
-}
+        body.dark-mode .nav-btn {
+            color: #e0e0e0 !important;
+        }
 
+        .stat-neto { background: #e8f5e9 !important; border-left: 5px solid #a5d6a7; }
+        .stat-bruto { background: #e3f2fd !important; border-left: 5px solid #90caf9; }
+        .stat-gasto { background: #fff3e0 !important; border-left: 5px solid #ffcc80; }
 
-/* ... otros estilos que ya tienes ... */
-        
-        .btn-note { border:none; background:none; cursor:pointer; font-size:1.1rem; padding: 5px; }
+        body.dark-mode .stat-neto { 
+            background: #142a16 !important; 
+            border-left: 5px solid #2e7d32; 
+        }
+        body.dark-mode .stat-bruto { 
+            background: #14212b !important; 
+            border-left: 5px solid #1565c0; 
+        }
+        body.dark-mode .stat-gasto { 
+            background: #2a1f14 !important; 
+            border-left: 5px solid #e67e22; 
+        }
 
-       /* --- ESTILOS SUAVIZADOS MEJORADOS --- */
-.stat-neto { background: #e8f5e9 !important; border-left: 5px solid #a5d6a7; }
-.stat-bruto { background: #e3f2fd !important; border-left: 5px solid #90caf9; }
-.stat-gasto { background: #fff3e0 !important; border-left: 5px solid #ffcc80; }
-
-/* Tonos suaves para Modo Oscuro (menos brillantes) */
-body.dark-mode .stat-neto { 
-    background: #142a16 !important; /* Verde bosque profundo muy suave */
-    border-left: 5px solid #2e7d32; 
-}
-body.dark-mode .stat-bruto { 
-    background: #14212b !important; /* Azul medianoche suave */
-    border-left: 5px solid #1565c0; 
-}
-body.dark-mode .stat-gasto { 
-    background: #2a1f14 !important; /* Marrón/Naranja quemado suave */
-    border-left: 5px solid #e67e22; 
-}
-
-/* Forzar que los textos dentro de estas tarjetas sean blancos en modo oscuro */
-body.dark-mode .main-stat small, 
-body.dark-mode .main-stat strong {
-    color: #e0e0e0 !important;
-}
-.fila-pagada { background-color: #A6FFB1 !important; }
-.fila-pagada td { border-bottom-color: #60CC6A !important; }
-        
-        
+        body.dark-mode .main-stat small, 
+        body.dark-mode .main-stat strong {
+            color: #e0e0e0 !important;
+        }
+        .fila-pagada { background-color: #A6FFB1 !important; }
+        .fila-pagada td { border-bottom-color: #60CC6A !important; }
+        body.dark-mode .fila-pagada { background-color: #142a16 !important; }
+        body.dark-mode .fila-pagada td { border-bottom-color: #2e7d32 !important; }
     </style>
 </head>
 <body>
@@ -190,7 +179,6 @@ body.dark-mode .main-stat strong {
                         </div>
                         <table id="tableFijos"><tbody></tbody></table>
                         <div style="background: #f1f3f4; margin-top: 10px; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; display: flex; justify-content: space-between; color: #333;">
-                           
                             <span id="f-totalizador">$0 / $0</span>
                         </div>
                     </div>
@@ -208,35 +196,34 @@ body.dark-mode .main-stat strong {
 
         <div id="view-pan-viajes">
             <div class="grid" style="padding: 0 10px;">
-               <div class="card main-stat stat-neto">
-    <small>NETO + RESERVA</small><br>
-    <strong id="s-net" style="font-size:1.4rem;">$0</strong>
-</div>
-<div class="card main-stat stat-bruto">
-    <small>BRUTO TOTAL</small><br>
-    <strong id="s-bru" style="font-size:1.4rem;">$0</strong>
-</div>
+                <div class="card main-stat stat-neto">
+                    <small>NETO + RESERVA</small><br>
+                    <strong id="s-net" style="font-size:1.4rem;">$0</strong>
+                </div>
+                <div class="card main-stat stat-bruto">
+                    <small>BRUTO TOTAL</small><br>
+                    <strong id="s-bru" style="font-size:1.4rem;">$0</strong>
+                </div>
                 <div class="card" style="margin:0; text-align:center"><small>TAG</small><br><span id="s-tag" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center"><small>BENCINA</small><br><span id="s-ben" style="color:var(--d); font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;"><small>RESERVA</small><br><span id="s-res" style="color:#3AB740; font-weight:bold">$0</span></div>
                 <div class="card" style="margin:0; text-align:center;">
-    <small id="label-sem">Horas Sem. Actual</small><br>
-    <span id="s-total-sem" style="color:#1a73e8; font-weight:bold;">0h</span><br>
-    <small id="s-prom-5" style="font-size:0.6rem;">Prom. 5 días: 0h</small>
-</div>
+                    <small id="label-sem">Horas Sem. Actual</small><br>
+                    <span id="s-total-sem" style="color:#1a73e8; font-weight:bold;">0h</span><br>
+                    <small id="s-prom-5" style="font-size:0.6rem;">Prom. 5 días: 0h</small>
+                </div>
             </div>
             <div class="card"><canvas id="chartApp"></canvas></div>
             <div class="card chart-container"><canvas id="chartLine"></canvas></div>
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-           <div class="card main-stat stat-gasto">
-    <small>GASTOS TOTALES</small><br>
-    <strong id="g-total" style="font-size:1.6rem;">$0</strong>
-</div>
-             <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
+            <div class="card main-stat stat-gasto">
+                <small>GASTOS TOTALES</small><br>
+                <strong id="g-total" style="font-size:1.6rem;">$0</strong>
+            </div>
+            <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
             <div class="card"><canvas id="chartGastos"></canvas></div>
-           
         </div>
     </div>
 
@@ -255,11 +242,10 @@ body.dark-mode .main-stat strong {
             <button id="sub-his-gastos" onclick="subTab('his', 'gastos')">Gastos</button>
         </div>
         <div id="view-his-viajes" class="card" style="padding:0; overflow-x:auto;">
-           <!-- CÓDIGO NUEVO: -->
-<table id="tableHis">
-    <thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>Horas</th><th>⚙️</th></tr></thead>
-    <tbody></tbody>
-</table>
+            <table id="tableHis">
+                <thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>Horas</th><th>⚙️</th></tr></thead>
+                <tbody></tbody>
+            </table>
         </div>
         <div id="view-his-gastos" class="card" style="display:none; padding:0; overflow-x:auto;">
             <table id="tableGastos">
@@ -345,57 +331,53 @@ body.dark-mode .main-stat strong {
             if(isHidden) loadFijos();
         }
 
-  async function loadFijos() {
-    const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
-    const d = await r.json();
-    cacheFijos = d.fijos || [];
+        async function loadFijos() {
+            const r = await fetch(API, { method: 'POST', body: JSON.stringify({action:"readFijos"}) });
+            const d = await r.json();
+            cacheFijos = d.fijos || [];
 
-    // Obtenemos el mes seleccionado en el filtro del panel o mes actual
-    const mesActual = document.getElementById('filtroMes').value || new Date().toISOString().substring(0, 7);
+            const fEl = document.getElementById('filtroMes');
+            const mesActual = (fEl && fEl.value) ? fEl.value : new Date().toISOString().substring(0, 7);
 
-    // Obtenemos las filas pagadas traídas directamente desde la nube (Google Sheets)
-    const pagadosServidor = d.pagados || [];
-    const pagadosLocal = pagadosServidor
-        .filter(p => p.mes === mesActual)
-        .map(p => p.row);
+            const pagadosServidor = d.pagados || [];
+            const pagadosLocal = pagadosServidor
+                .filter(p => String(p.mes) === String(mesActual))
+                .map(p => Number(p.row));
 
-    let totalG = 0, totalP = 0;
+            let totalG = 0, totalP = 0;
 
-    document.querySelector('#tableFijos tbody').innerHTML = cacheFijos.map(g => {
-        totalG += g.monto; 
-        const esP = pagadosLocal.includes(g.row); 
-        if(esP) totalP += g.monto;
-        
-        return `<tr class="${esP ? 'fila-pagada' : ''}">
-            <td class="check-btn" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
-            <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
-            <td class="${esP ? 'strike' : ''}">$${g.monto.toLocaleString()}</td>
-            <td>
-                <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
-                <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
-            </td>
-        </tr>`;
-    }).join('');
+            document.querySelector('#tableFijos tbody').innerHTML = cacheFijos.map(g => {
+                totalG += Number(g.monto) || 0; 
+                const esP = pagadosLocal.includes(Number(g.row)); 
+                if(esP) totalP += Number(g.monto) || 0;
+                
+                return `<tr id="fijo-row-${g.row}" class="${esP ? 'fila-pagada' : ''}">
+                    <td class="check-btn" style="cursor:pointer; font-size:1.2rem;" onclick="tachado(${g.row})">${esP ? '✅' : '🔲'}</td>
+                    <td style="text-align:left" class="${esP ? 'strike' : ''}">${g.nombre}</td>
+                    <td class="${esP ? 'strike' : ''}">$${(Number(g.monto) || 0).toLocaleString()}</td>
+                    <td>
+                        <button class="btn-note" onclick="openNote(${g.row})">${g.nota ? '📝' : '✏️'}</button>
+                        <button onclick="delFijo(${g.row})" style="border:none;background:none;color:var(--d);">X</button>
+                    </td>
+                </tr>`;
+            }).join('');
 
-    // Calculamos lo que falta por pagar
-    let pendiente = totalG - totalP;
+            let pendiente = totalG - totalP;
 
-    // Actualizamos el totalizador a la derecha
-    const totalizador = document.getElementById('f-totalizador');
-    totalizador.style.textAlign = 'right';
-    totalizador.innerHTML = `
-        <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
-        <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
-        <span style="color:#3C25BA; font-weight:bold">Total: $${totalG.toLocaleString()}</span>&nbsp;
-    `;
-}
+            const totalizador = document.getElementById('f-totalizador');
+            totalizador.style.textAlign = 'right';
+            totalizador.innerHTML = `
+                <span style="color:var(--s)">Pagado: $${totalP.toLocaleString()}</span> &nbsp;|&nbsp; 
+                <span style="color:var(--d)">Pendiente: $${pendiente.toLocaleString()}</span> &nbsp;|&nbsp; 
+                <span style="color:#3C25BA; font-weight:bold">Total: $${totalG.toLocaleString()}</span>&nbsp;
+            `;
+        }
 
-        // --- FUNCIONES DE NOTAS ---
         function openNote(row) {
             const fijo = cacheFijos.find(f => f.row === row);
             editingFijoRow = row;
-            document.getElementById('noteTitle').innerText = "Nota: " + fijo.nombre;
-            document.getElementById('noteArea').value = fijo.nota || "";
+            document.getElementById('noteTitle').innerText = "Nota: " + (fijo ? fijo.nombre : '');
+            document.getElementById('noteArea').value = (fijo && fijo.nota) ? fijo.nota : "";
             document.getElementById('noteModal').style.display = 'block';
         }
 
@@ -409,20 +391,31 @@ body.dark-mode .main-stat strong {
         function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
 
         async function tachado(row) {
-    const mes = document.getElementById('filtroMes').value || new Date().toISOString().substring(0, 7);
-    
-    // Enviamos la actualización a la nube en lugar de guardar localmente
-    await fetch(API, { 
-        method: 'POST', 
-        body: JSON.stringify({
-            action: "togglePagadoFijo", 
-            payload: { row: row, mes: mes }
-        }) 
-    });
-    
-    // Recargamos los gastos desde Google Sheets
-    loadFijos();
-}
+            const tr = document.getElementById(`fijo-row-${row}`);
+            if(tr) {
+                const btn = tr.querySelector('.check-btn');
+                if(btn.innerText === '🔲') {
+                    btn.innerText = '✅';
+                    tr.classList.add('fila-pagada');
+                } else {
+                    btn.innerText = '🔲';
+                    tr.classList.remove('fila-pagada');
+                }
+            }
+
+            const fEl = document.getElementById('filtroMes');
+            const mes = (fEl && fEl.value) ? fEl.value : new Date().toISOString().substring(0, 7);
+            
+            await fetch(API, { 
+                method: 'POST', 
+                body: JSON.stringify({
+                    action: "togglePagadoFijo", 
+                    payload: { row: row, mes: mes }
+                }) 
+            });
+            
+            loadFijos();
+        }
 
         async function delFijo(row) { if(confirm("¿Eliminar?")) { await fetch(API, { method: 'POST', body: JSON.stringify({action:"deleteFijo", row}) }); loadFijos(); } }
         async function addFijo() {
@@ -432,106 +425,94 @@ body.dark-mode .main-stat strong {
             document.getElementById('f-nom').value = ""; document.getElementById('f-mon').value = ""; loadFijos();
         }
 
-      async function loadData() {
-    const fValue = document.getElementById('filtroMes').value;
-    if (!fValue) return;
-    const f = fValue.split('-');
-    
-    // 1. Llamada a la API
-    const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: "read", mes: f[1], anio: f[0] }) });
-    const d = await r.json();
-    
-    // Aseguramos que d.records exista para evitar errores
-    cacheViajes = d.records || [];
+        async function loadData() {
+            const fValue = document.getElementById('filtroMes').value;
+            if (!fValue) return;
+            const f = fValue.split('-');
+            
+            const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: "read", mes: f[1], anio: f[0] }) });
+            const d = await r.json();
+            
+            cacheViajes = d.records || [];
 
-    // --- LÓGICA DE HORAS CORREGIDA ---
-const filtroVal = document.getElementById('filtroMes').value; // Ej: "2026-05"
-const [anioSel, mesSel] = filtroVal.split('-').map(Number);
+            const filtroVal = document.getElementById('filtroMes').value;
+            const [anioSel, mesSel] = filtroVal.split('-').map(Number);
 
-const ahora = new Date();
-const diaSemActual = ahora.getDay(); 
-const diff = (diaSemActual === 0 ? 6 : diaSemActual - 1); 
-const lunesEstaSemana = new Date(ahora);
-lunesEstaSemana.setDate(ahora.getDate() - diff);
-lunesEstaSemana.setHours(0, 0, 0, 0);
+            const ahora = new Date();
+            const diaSemActual = ahora.getDay(); 
+            const diff = (diaSemActual === 0 ? 6 : diaSemActual - 1); 
+            const lunesEstaSemana = new Date(ahora);
+            lunesEstaSemana.setDate(ahora.getDate() - diff);
+            lunesEstaSemana.setHours(0, 0, 0, 0);
 
-let acumuladoSemanaActual = 0;
-let acumuladoMesSeleccionado = 0;
+            let acumuladoSemanaActual = 0;
+            let acumuladoMesSeleccionado = 0;
 
-cacheViajes.forEach(reg => {
-    const horasDia = (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
-    
-    // Obtenemos año y mes del registro actual
-    const fechaLimpia = reg.f.split('T')[0].replace(/-/g, '/');
-    const fechaReg = new Date(fechaLimpia);
-    const anioReg = fechaReg.getFullYear();
-    const mesReg = fechaReg.getMonth() + 1; // getMonth() es 0-11
+            cacheViajes.forEach(reg => {
+                const horasDia = (Number(reg.hm) || 0) + (Number(reg.ht) || 0);
+                
+                const fechaLimpia = reg.f.split('T')[0].replace(/-/g, '/');
+                const fechaReg = new Date(fechaLimpia);
+                const anioReg = fechaReg.getFullYear();
+                const mesReg = fechaReg.getMonth() + 1;
 
-    // VALIDACIÓN: Solo suma al acumulado del mes si el registro coincide con el filtro
-    if (anioReg === anioSel && mesReg === mesSel) {
-        acumuladoMesSeleccionado += horasDia;
-    }
+                if (anioReg === anioSel && mesReg === mesSel) {
+                    acumuladoMesSeleccionado += horasDia;
+                }
 
-    // VALIDACIÓN: Solo suma a la semana si el registro es de esta semana actual
-    if (fechaReg >= lunesEstaSemana && fechaReg <= ahora) {
-        acumuladoSemanaActual += horasDia;
-    }
-});
+                if (fechaReg >= lunesEstaSemana && fechaReg <= ahora) {
+                    acumuladoSemanaActual += horasDia;
+                }
+            });
 
-// Actualización de la interfaz
-document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
-document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesSeleccionado + "h";
+            document.getElementById('s-total-sem').innerText = acumuladoSemanaActual + "h";
+            document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumuladoMesSeleccionado + "h";
 
-    // --- RESTO DE ESTADÍSTICAS ---
-    // Usamos || 0 para que si no hay datos de un mes, la app no se caiga
-    const stats = d.stats || {};
-    document.getElementById('s-net').innerText = "$" + (stats.netoMasReserva || 0).toLocaleString();
-    document.getElementById('s-bru').innerText = "$" + (stats.bru || 0).toLocaleString();
-    document.getElementById('s-ben').innerText = "$" + (stats.ben || 0).toLocaleString();
-    document.getElementById('s-tag').innerText = "$" + (stats.tag || 0).toLocaleString();
-    document.getElementById('s-res').innerText = "$" + (stats.res || 0).toLocaleString();
-    
-    const statsG = d.statsGastos || { total: 0, porCategoria: {} };
-    document.getElementById('g-total').innerText = "$" + (statsG.total || 0).toLocaleString();
+            const stats = d.stats || {};
+            document.getElementById('s-net').innerText = "$" + (stats.netoMasReserva || 0).toLocaleString();
+            document.getElementById('s-bru').innerText = "$" + (stats.bru || 0).toLocaleString();
+            document.getElementById('s-ben').innerText = "$" + (stats.ben || 0).toLocaleString();
+            document.getElementById('s-tag').innerText = "$" + (stats.tag || 0).toLocaleString();
+            document.getElementById('s-res').innerText = "$" + (stats.res || 0).toLocaleString();
+            
+            const statsG = d.statsGastos || { total: 0, porCategoria: {} };
+            document.getElementById('g-total').innerText = "$" + (statsG.total || 0).toLocaleString();
 
-    // --- LISTA DE GASTOS ---
-    let htmlGastos = "";
-    const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍Ç", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
-    
-    for (let cat in statsG.porCategoria) {
-        let ico = iconos[cat] || "📦";
-        htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
-            <span style="color:var(--text)">${ico} ${cat}</span>
-            <b style="color:var(--text)">$${statsG.porCategoria[cat].toLocaleString()}</b>
-        </div>`;
-    }
-    document.getElementById('gastos-detalles-list').innerHTML = htmlGastos || "<small>No hay gastos registrados</small>";
+            let htmlGastos = "";
+            const iconos = { "Vivienda": "🏠", "Alimentación": "🛒", "Entretencion/Ocio": "🎭", "Telefonia y Suscripciones": "☎️", "Salud": "🏥", "Inversiones": "💰", "Deudas": "💳", "Educacion": "📚", "Mascotas": "🐕‍🦺", "Hija": "👧🏻", "Personal": "❤️", "Desayunos": "🥞" };
+            
+            for (let cat in statsG.porCategoria) {
+                let ico = iconos[cat] || "📦";
+                htmlGastos += `<div class="card" style="margin:5px 0; padding:10px; display:flex; justify-content:space-between; border-left: 5px solid var(--warn);">
+                    <span style="color:var(--text)">${ico} ${cat}</span>
+                    <b style="color:var(--text)">$${statsG.porCategoria[cat].toLocaleString()}</b>
+                </div>`;
+            }
+            document.getElementById('gastos-detalles-list').innerHTML = htmlGastos || "<small>No hay gastos registrados</small>";
 
-    // --- TABLAS HISTORIAL ---
-    // CÓDIGO NUEVO:
-document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => {
-    const totalHorasDia = (Number(r.hm) || 0) + (Number(r.ht) || 0);
-    const [anio, mes, dia] = String(r.f).substring(0, 10).split('-');
-    const fechaFormateada = `${dia}-${mes}-${anio.slice(-2)}`;
+            document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => {
+                const totalHorasDia = (Number(r.hm) || 0) + (Number(r.ht) || 0);
+                const [anio, mes, dia] = String(r.f).substring(0, 10).split('-');
+                const fechaFormateada = `${dia}-${mes}-${anio.slice(-2)}`;
 
-    return `<tr>
-        <td style="white-space: nowrap;">${fechaFormateada}</td>
-        <td>$${(r.bru || 0).toLocaleString()}</td>
-        <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
-        <td style="color:var(--p); font-weight:bold;">${totalHorasDia}h</td>
-        <td style="white-space: nowrap;"><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-    </tr>`;
-}).join('');
+                return `<tr>
+                    <td style="white-space: nowrap;">${fechaFormateada}</td>
+                    <td>$${(r.bru || 0).toLocaleString()}</td>
+                    <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
+                    <td style="color:var(--p); font-weight:bold;">${totalHorasDia}h</td>
+                    <td style="white-space: nowrap;"><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+                </tr>`;
+            }).join('');
 
-    const listaGastos = d.gastos || [];
-    document.querySelector('#tableGastos tbody').innerHTML = listaGastos.map(g => `<tr>
-        <td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc || ''}</small><br><small style="color:#999">${g.fecha}</small></td>
-        <td>$${(g.monto || 0).toLocaleString()}<br><small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small></td>
-        <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-    </tr>`).join('');
-    
-    renderCharts(d);
-}
+            const listaGastos = d.gastos || [];
+            document.querySelector('#tableGastos tbody').innerHTML = listaGastos.map(g => `<tr>
+                <td style="text-align:left"><b>${g.cat}</b><br><small>${g.desc || ''}</small><br><small style="color:#999">${g.fecha}</small></td>
+                <td>$${(g.monto || 0).toLocaleString()}<br><small style="color:#666; font-size: 0.65rem;">${g.met || ''}</small></td>
+                <td><button onclick="deleteGasto(${g.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
+            </tr>`).join('');
+            
+            renderCharts(d);
+        }
 
         function renderCharts(d) {
             const isDark = document.body.classList.contains('dark-mode');
@@ -563,45 +544,40 @@ document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => {
         
         async function enviarVoz() { const m = document.getElementById('textVoz').value; if(!m) return; await fetch(API, { method: 'POST', body: JSON.stringify({action:"create", mensaje: m}) }); document.getElementById('textVoz').value = ""; loadData(); }
         async function enviarManual() {
-    const fechaSeleccionada = document.getElementById('m-fecha').value;
-    if (!fechaSeleccionada) return alert("Por favor, selecciona una fecha");
+            const fechaSeleccionada = document.getElementById('m-fecha').value;
+            if (!fechaSeleccionada) return alert("Por favor, selecciona una fecha");
 
-    // Validación para evitar duplicados accidentales
-    const yaExiste = cacheViajes.some(reg => reg.f.split('T')[0] === fechaSeleccionada);
-    if (yaExiste) {
-        const confirmar = confirm("Ya existe un registro para esta fecha. ¿Deseas guardar uno nuevo de todos modos? (Esto sumará al acumulado del mes)");
-        if (!confirmar) return;
-    }
+            const yaExiste = cacheViajes.some(reg => reg.f.split('T')[0] === fechaSeleccionada);
+            if (yaExiste) {
+                const confirmar = confirm("Ya existe un registro para esta fecha. ¿Deseas guardar uno nuevo de todos modos? (Esto sumará al acumulado del mes)");
+                if (!confirmar) return;
+            }
 
-    const p = { 
-        fecha: fechaSeleccionada, // Ahora se envía la fecha elegida
-        ind: +document.getElementById('m-ind').value, 
-        did: +document.getElementById('m-did').value, 
-        cab: +document.getElementById('m-cab').value, 
-        ben: +document.getElementById('m-ben').value, 
-        tag: +document.getElementById('m-tag').value, 
-        res: +document.getElementById('m-res').value, 
-        com: +document.getElementById('m-com').value, 
-        hm: +document.getElementById('m-hm').value, 
-        ht: +document.getElementById('m-ht').value 
-    };
+            const p = { 
+                fecha: fechaSeleccionada,
+                ind: +document.getElementById('m-ind').value, 
+                did: +document.getElementById('m-did').value, 
+                cab: +document.getElementById('m-cab').value, 
+                ben: +document.getElementById('m-ben').value, 
+                tag: +document.getElementById('m-tag').value, 
+                res: +document.getElementById('m-res').value, 
+                com: +document.getElementById('m-com').value, 
+                hm: +document.getElementById('m-hm').value, 
+                ht: +document.getElementById('m-ht').value 
+            };
 
-    // Enviamos los datos al servidor
-    await fetch(API, { 
-        method: 'POST', 
-        body: JSON.stringify({action: "create", isManual: true, payload: p}) 
-    });
+            await fetch(API, { 
+                method: 'POST', 
+                body: JSON.stringify({action: "create", isManual: true, payload: p}) 
+            });
 
-    // Limpiamos los campos para el próximo registro
-    const ids = ['m-ind', 'm-did', 'm-cab', 'm-ben', 'm-tag', 'm-res', 'm-com', 'm-hm', 'm-ht'];
-    ids.forEach(id => document.getElementById(id).value = "");
-    
-    // Devolvemos la fecha a la de hoy por defecto
-    document.getElementById('m-fecha').value = new Date().toISOString().split('T')[0];
+            const ids = ['m-ind', 'm-did', 'm-cab', 'm-ben', 'm-tag', 'm-res', 'm-com', 'm-hm', 'm-ht'];
+            ids.forEach(id => document.getElementById(id).value = "");
+            
+            document.getElementById('m-fecha').value = new Date().toISOString().split('T')[0];
 
-    // Recargamos el panel y el historial
-    loadData();
-}
+            loadData();
+        }
 
         window.onload = function() {
             if(localStorage.getItem('darkMode') === 'true') { document.body.classList.add('dark-mode'); }
@@ -609,8 +585,8 @@ document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => {
             document.getElementById('filtroMes').value = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
             loadData();
             const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('m-fecha').value = hoy;
-    if(document.getElementById('v-fecha')) document.getElementById('v-fecha').value = hoy;
+            document.getElementById('m-fecha').value = hoy;
+            if(document.getElementById('v-fecha')) document.getElementById('v-fecha').value = hoy;
         };
     </script>
 </body>
