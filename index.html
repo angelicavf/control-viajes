@@ -255,10 +255,11 @@ body.dark-mode .main-stat strong {
             <button id="sub-his-gastos" onclick="subTab('his', 'gastos')">Gastos</button>
         </div>
         <div id="view-his-viajes" class="card" style="padding:0; overflow-x:auto;">
-            <table id="tableHis">
-                <thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>⚙️</th></tr></thead>
-                <tbody></tbody>
-            </table>
+           <!-- CÓDIGO NUEVO: -->
+<table id="tableHis">
+    <thead><tr><th>Fecha</th><th>Bruto</th><th>Neto</th><th>Horas</th><th>⚙️</th></tr></thead>
+    <tbody></tbody>
+</table>
         </div>
         <div id="view-his-gastos" class="card" style="display:none; padding:0; overflow-x:auto;">
             <table id="tableGastos">
@@ -488,12 +489,17 @@ document.getElementById('s-prom-5').innerText = "Horas acumulada Mes: " + acumul
     document.getElementById('gastos-detalles-list').innerHTML = htmlGastos || "<small>No hay gastos registrados</small>";
 
     // --- TABLAS HISTORIAL ---
-    document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => `<tr>
+    // CÓDIGO NUEVO:
+document.querySelector('#tableHis tbody').innerHTML = cacheViajes.map(r => {
+    const totalHorasDia = (Number(r.hm) || 0) + (Number(r.ht) || 0);
+    return `<tr>
         <td>${String(r.f).substring(0,10)}</td>
         <td>$${(r.bru || 0).toLocaleString()}</td>
         <td style="color:${r.net < 0 ? 'var(--d)' : 'green'}; font-weight:bold;">$${(r.net || 0).toLocaleString()}</td>
+        <td style="color:var(--p); font-weight:bold;">${totalHorasDia}h</td>
         <td><button onclick="openEdit(${r.row})" style="border:none;background:none;font-size:1.2rem">✏️</button><button onclick="deleteReg(${r.row})" style="border:none;background:none;font-size:1.2rem">🗑️</button></td>
-    </tr>`).join('');
+    </tr>`;
+}).join('');
 
     const listaGastos = d.gastos || [];
     document.querySelector('#tableGastos tbody').innerHTML = listaGastos.map(g => `<tr>
