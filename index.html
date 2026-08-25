@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>Registros Edu</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- AGREGA ESTA LÍNEA DEBAJO DE CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <style>
         :root { --p: #1a73e8; --s: #34a853; --d: #ea4335; --bg: #f8f9fa; --warn: #e67e22; --text: #333; --card-bg: #ffffff; --nav-bg: #ffffff; }
         
@@ -565,6 +567,11 @@ async function loadFijos() {
     const tickColor = isDark ? '#f1f1f1' : '#666';
     const gridColor = isDark ? '#333' : '#eee';
 
+    // Registrar el plugin de etiquetas de datos
+    if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
+
     // Generar dinámicamente los últimos 12 meses
     const mesesLabels = [];
     const mesesData = [];
@@ -578,15 +585,15 @@ async function loadFijos() {
         
         mesesLabels.push(nombreMes);
         
-        let totalNetoMes = 0;
+        let totalNetoMasReservaMes = 0;
         cacheViajes.forEach(reg => {
             const fechaLimpia = String(reg.f).split('T')[0].replace(/-/g, '/');
             const fReg = new Date(fechaLimpia);
             if (!isNaN(fReg) && fReg.getFullYear() === anio && (fReg.getMonth() + 1) === mes) {
-                totalNetoMes += Number(reg.net) || 0;
+                totalNetoMasReservaMes += (Number(reg.net) || 0) + (Number(reg.res) || 0);
             }
         });
-        mesesData.push(totalNetoMes);
+        mesesData.push(totalNetoMasReservaMes);
     }
 
     if(charts.meses12) charts.meses12.destroy();
@@ -595,9 +602,9 @@ async function loadFijos() {
         data: {
             labels: mesesLabels,
             datasets: [{
-                label: 'Neto Total ($)',
+                label: 'Neto + Reserva ($)',
                 data: mesesData,
-                backgroundColor: '#1a73e8',
+                backgroundColor: '#34a853',
                 borderRadius: 6
             }]
         },
@@ -605,7 +612,22 @@ async function loadFijos() {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                title: { display: true, text: 'Evolución Neto Total - Últimos 12 Meses', color: tickColor }
+                title: { display: true, text: 'Evolución Neto + Reserva - Últimos 12 Meses', color: tickColor },
+                
+                // --- CONFIGURACIÓN DE ETIQUETAS VERTICALES EN BARRAS ---
+                datalabels: {
+                    color: '#ffffff',
+                    anchor: 'end',
+                    align: 'start',
+                    rotation: -90, // Orientación vertical del texto
+                    font: {
+                        weight: 'bold',
+                        size: 10
+                    },
+                    formatter: function(value) {
+                        return value > 0 ? '$' + value.toLocaleString() : '';
+                    }
+                }
             },
             scales: {
                 x: { ticks: { color: tickColor }, grid: { display: false } },
