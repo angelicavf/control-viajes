@@ -230,7 +230,7 @@
                 </div>
             </div>
             <div class="card"><canvas id="chartApp"></canvas></div>
-            <div class="card chart-container"><canvas id="chartLine"></canvas></div>
+           <div class="card chart-container"><canvas id="chart12Meses"></canvas></div>
         </div>
 
         <div id="view-pan-gastos" style="display:none">
@@ -561,16 +561,59 @@ async function loadFijos() {
 }
 
         function renderCharts(d) {
-            const isDark = document.body.classList.contains('dark-mode');
-            const tickColor = isDark ? '#f1f1f1' : '#666';
-            const gridColor = isDark ? '#333' : '#eee';
-            if(charts.app) charts.app.destroy();
-            charts.app = new Chart(document.getElementById('chartApp'), { type: 'bar', data: { labels: ['Ind','Didi','Cab'], datasets: [{ data: [d.stats.apps.INDRIVER, d.stats.apps.DIDI, d.stats.apps.CABIFY], backgroundColor: ['#27ae60', '#f1c40f', '#8e44ad'] }] }, options: { plugins: { legend: { display: false }, title: { display: true, text: 'Producción Bruta por App', color: tickColor } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
-            if(charts.line) charts.line.destroy();
-            charts.line = new Chart(document.getElementById('chartLine'), { type: 'line', data: { labels: d.stats.hist.map(h => h.d), datasets: [{ label: 'Bruta', data: d.stats.hist.map(h => h.p), borderColor: '#1a73e8', tension: 0.3 }, { label: 'Neta+Res', data: d.stats.hist.map(h => h.nr), borderColor: '#ea4335', tension: 0.3 }] }, options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: tickColor } } }, scales: { x: { ticks: { color: tickColor } }, y: { ticks: { color: tickColor }, grid: { color: gridColor } } } } });
-            if(charts.gastos) charts.gastos.destroy();
-            charts.gastos = new Chart(document.getElementById('chartGastos'), { type: 'doughnut', data: { labels: Object.keys(d.statsGastos.porCategoria), datasets: [{ data: Object.values(d.statsGastos.porCategoria), backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'] }] }, options: { plugins: { legend: { labels: { color: tickColor }, position: 'bottom' } } } });
+    const isDark = document.body.classList.contains('dark-mode');
+    const tickColor = isDark ? '#f1f1f1' : '#666';
+    const gridColor = isDark ? '#333' : '#eee';
+
+    // Generar dinámicamente los últimos 12 meses
+    const mesesLabels = [];
+    const mesesData = [];
+    const ahora = new Date();
+    
+    for (let i = 11; i >= 0; i--) {
+        const dTarget = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+        const anio = dTarget.getFullYear();
+        const mes = dTarget.getMonth() + 1;
+        const nombreMes = dTarget.toLocaleString('es-CL', { month: 'short', year: '2-digit' });
+        
+        mesesLabels.push(nombreMes);
+        
+        let totalNetoMes = 0;
+        cacheViajes.forEach(reg => {
+            const fechaLimpia = String(reg.f).split('T')[0].replace(/-/g, '/');
+            const fReg = new Date(fechaLimpia);
+            if (!isNaN(fReg) && fReg.getFullYear() === anio && (fReg.getMonth() + 1) === mes) {
+                totalNetoMes += Number(reg.net) || 0;
+            }
+        });
+        mesesData.push(totalNetoMes);
+    }
+
+    if(charts.meses12) charts.meses12.destroy();
+    charts.meses12 = new Chart(document.getElementById('chart12Meses'), {
+        type: 'bar',
+        data: {
+            labels: mesesLabels,
+            datasets: [{
+                label: 'Neto Total ($)',
+                data: mesesData,
+                backgroundColor: '#1a73e8',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Evolución Neto Total - Últimos 12 Meses', color: tickColor }
+            },
+            scales: {
+                x: { ticks: { color: tickColor }, grid: { display: false } },
+                y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+            }
         }
+    });
+}
 
         async function guardarGasto() {
             const p = { categoria: document.getElementById('g-cat').value, descripcion: document.getElementById('g-desc').value, monto: document.getElementById('g-monto').value, metodoPago: document.getElementById('g-met').value };
