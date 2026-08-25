@@ -236,13 +236,14 @@
         </div>
 
         <div id="view-pan-gastos" style="display:none">
-            <div class="card main-stat stat-gasto">
-                <small>GASTOS TOTALES</small><br>
-                <strong id="g-total" style="font-size:1.6rem;">$0</strong>
-            </div>
-            <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
-            <div class="card"><canvas id="chartGastos"></canvas></div>
-        </div>
+    <div class="card main-stat stat-gasto">
+        <small>GASTOS TOTALES</small><br>
+        <strong id="g-total" style="font-size:1.6rem;">$0</strong>
+    </div>
+    <div id="gastos-detalles-list" style="margin-top: 15px;"></div>
+    <!-- CONTENEDOR DEL GRÁFICO DE ANILLO -->
+    <div class="card"><canvas id="chartGastos"></canvas></div>
+</div>
     </div>
 
     <div id="noteModal" class="modal">
@@ -564,17 +565,14 @@ async function loadFijos() {
 
         function renderCharts(d) {
     const isDark = document.body.classList.contains('dark-mode');
-    
-    // Colores dinámicos para modo claro y oscuro
     const tickColor = isDark ? '#f1f1f1' : '#333333';
     const gridColor = isDark ? '#333333' : '#e0e0e0';
 
-    // Registrar el plugin de etiquetas de datos si existe
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
     }
 
-    // Generar dinámicamente los últimos 12 meses
+    // --- 1. GRÁFICO BARRAS 12 MESES (VIAJES) ---
     const mesesLabels = [];
     const mesesData = [];
     const ahora = new Date();
@@ -598,58 +596,73 @@ async function loadFijos() {
         mesesData.push(totalNetoMasReservaMes);
     }
 
-    if(charts.meses12) charts.meses12.destroy();
-    
-    const ctx = document.getElementById('chart12Meses');
-    if (!ctx) return;
-
-    charts.meses12 = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: mesesLabels,
-            datasets: [{
-                label: 'Neto + Reserva ($)',
-                data: mesesData,
-                backgroundColor: '#34a853',
-                borderRadius: 6
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                title: { 
-                    display: true, 
-                    text: 'Evolución Neto + Reserva - Últimos 12 Meses', 
-                    color: tickColor,
-                    font: { size: 13, weight: 'bold' }
-                },
-                datalabels: {
-                    color: '#ffffff',
-                    anchor: 'end',
-                    align: 'start',
-                    rotation: -90,
-                    font: {
-                        weight: 'bold',
-                        size: 10
-                    },
-                    formatter: function(value) {
-                        return value > 0 ? '$' + value.toLocaleString() : '';
-                    }
-                }
+    if (charts.meses12) charts.meses12.destroy();
+    const ctx12 = document.getElementById('chart12Meses');
+    if (ctx12) {
+        charts.meses12 = new Chart(ctx12, {
+            type: 'bar',
+            data: {
+                labels: mesesLabels,
+                datasets: [{
+                    label: 'Neto + Reserva ($)',
+                    data: mesesData,
+                    backgroundColor: '#34a853',
+                    borderRadius: 6
+                }]
             },
-            scales: {
-                x: { 
-                    ticks: { color: tickColor }, 
-                    grid: { display: false } 
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { 
+                        display: true, 
+                        text: 'Evolución Neto + Reserva - Últimos 12 Meses', 
+                        color: tickColor,
+                        font: { size: 13, weight: 'bold' }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        anchor: 'end',
+                        align: 'start',
+                        rotation: -90,
+                        font: { weight: 'bold', size: 10 },
+                        formatter: function(value) {
+                            return value > 0 ? '$' + value.toLocaleString() : '';
+                        }
+                    }
                 },
-                y: { 
-                    ticks: { color: tickColor }, 
-                    grid: { color: gridColor } 
+                scales: {
+                    x: { ticks: { color: tickColor }, grid: { display: false } },
+                    y: { ticks: { color: tickColor }, grid: { color: gridColor } }
                 }
             }
-        }
-    });
+        });
+    }
+
+    // --- 2. GRÁFICO DE ANILLO (GASTOS) ---
+    if (charts.gastos) charts.gastos.destroy();
+    const ctxGastos = document.getElementById('chartGastos');
+    if (ctxGastos && d.statsGastos && d.statsGastos.porCategoria) {
+        charts.gastos = new Chart(ctxGastos, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(d.statsGastos.porCategoria),
+                datasets: [{
+                    data: Object.values(d.statsGastos.porCategoria),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#2ECC71', '#E74C3C']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: { color: tickColor },
+                        position: 'bottom'
+                    },
+                    datalabels: { display: false } // Desactiva etiquetas numéricas internas para mantener limpio el gráfico de dona
+                }
+            }
+        });
+    }
 }
 
         async function guardarGasto() {
