@@ -231,7 +231,7 @@
                     <small id="s-prom-5" style="font-size:0.6rem;">Prom. 5 días: 0h</small>
                 </div>
             </div>
-            <div class="card"><canvas id="chartApp"></canvas></div>
+          
            <div class="card chart-container"><canvas id="chart12Meses"></canvas></div>
         </div>
 
@@ -562,12 +562,14 @@ async function loadFijos() {
     renderCharts(d);
 }
 
-        function renderCharts(d) {
+        ffunction renderCharts(d) {
     const isDark = document.body.classList.contains('dark-mode');
-    const tickColor = isDark ? '#f1f1f1' : '#666';
-    const gridColor = isDark ? '#333' : '#eee';
+    
+    // Colores dinámicos para modo claro y oscuro
+    const tickColor = isDark ? '#f1f1f1' : '#333333';
+    const gridColor = isDark ? '#333333' : '#e0e0e0';
 
-    // Registrar el plugin de etiquetas de datos
+    // Registrar el plugin de etiquetas de datos si existe
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
     }
@@ -597,7 +599,11 @@ async function loadFijos() {
     }
 
     if(charts.meses12) charts.meses12.destroy();
-    charts.meses12 = new Chart(document.getElementById('chart12Meses'), {
+    
+    const ctx = document.getElementById('chart12Meses');
+    if (!ctx) return;
+
+    charts.meses12 = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: mesesLabels,
@@ -612,14 +618,17 @@ async function loadFijos() {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                title: { display: true, text: 'Evolución Neto + Reserva - Últimos 12 Meses', color: tickColor },
-                
-                // --- CONFIGURACIÓN DE ETIQUETAS VERTICALES EN BARRAS ---
+                title: { 
+                    display: true, 
+                    text: 'Evolución Neto + Reserva - Últimos 12 Meses', 
+                    color: tickColor,
+                    font: { size: 13, weight: 'bold' }
+                },
                 datalabels: {
                     color: '#ffffff',
                     anchor: 'end',
                     align: 'start',
-                    rotation: -90, // Orientación vertical del texto
+                    rotation: -90,
                     font: {
                         weight: 'bold',
                         size: 10
@@ -630,8 +639,14 @@ async function loadFijos() {
                 }
             },
             scales: {
-                x: { ticks: { color: tickColor }, grid: { display: false } },
-                y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+                x: { 
+                    ticks: { color: tickColor }, 
+                    grid: { display: false } 
+                },
+                y: { 
+                    ticks: { color: tickColor }, 
+                    grid: { color: gridColor } 
+                }
             }
         }
     });
